@@ -1,16 +1,31 @@
 #!/usr/bin/env node
 
+/**
+ * Email MCP Server - Clean, flexible email operations
+ * Supports both SMTP (sending) and IMAP (reading) operations
+ */
+
+import 'dotenv/config';
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { createToolDefinitions } from "./tools.js";
-import { setupRequestHandlers } from "./requestHandler.js";
-import { ensureConfigDirectories } from "./config.js";
+import {
+  CallToolRequestSchema,
+  ListToolsRequestSchema,
+} from "@modelcontextprotocol/sdk/types.js";
+import { EMAIL_TOOLS } from "./emailTools.js";
+import {
+  handleEmailsFind,
+  handleEmailsModify,
+  handleEmailSend,
+  handleEmailRespond,
+  handleFoldersList
+} from "./emailHandlers.js";
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 
-// Set up logging to a file instead of console
-const logDir = path.join(os.tmpdir(), 'smtp-mcp-server-logs');
+// Set up logging
+const logDir = path.join(os.tmpdir(), 'email-mcp-server-logs');
 try {
   if (!fs.existsSync(logDir)) {
     fs.mkdirSync(logDir, { recursive: true });
@@ -19,9 +34,9 @@ try {
   // Silently fail if we can't create the log directory
 }
 
-const logFile = path.join(logDir, 'smtp-mcp-server.log');
+const logFile = path.join(logDir, 'email-mcp-server.log');
 
-export function logToFile(message: string): void {
+function logToFile(message: string): void {
   try {
     fs.appendFileSync(logFile, `${new Date().toISOString()} - ${message}\n`);
   } catch (error) {
@@ -30,23 +45,18 @@ export function logToFile(message: string): void {
 }
 
 /**
- * Main function to run the SMTP MCP server
+ * Main server function
  */
 async function runServer() {
   try {
-    // Ensure config directories exist
-    await ensureConfigDirectories();
-
     // Initialize the server
     const server = new Server(
       {
-        name: "smtp-email-server",
-        version: "1.0.0",
-        description: "SMTP Email MCP Server with template management"
+        name: "email-server",
+        version: "2.0.0"
       },
       {
         capabilities: {
-          resources: {},
           tools: {},
         },
       }
@@ -55,35 +65,78 @@ async function runServer() {
     // Set error handler
     server.onerror = (error) => logToFile(`[MCP Error] ${error}`);
 
-    // Create tool definitions
-    const TOOLS = createToolDefinitions();
+    // Handle list tools request
+    server.setRequestHandler(ListToolsRequestSchema, async () => {
+      return {
+        tools: Object.values(EMAIL_TOOLS)
+      };
+    });
 
-    // Setup request handlers
-    await setupRequestHandlers(server, TOOLS);
+    // Handle tool calls
+    server.setRequestHandler(CallToolRequestSchema, async (request) => {
+      const { name, arguments: args } = request.params;
+
+      try {
+        let result: string;
+
+        switch (name) {
+          case "emails_find":
+            result = await handleEmailsFind(args);
+            break;
+          
+          case "emails_modify":
+            result = await handleEmailsModify(args);
+            break;
+          
+          case "email_send":
+            result = await handleEmailSend(args);
+            break;
+          
+          case "email_respond":
+            result = await handleEmailRespond(args);
+            break;
+          
+          case "folders_list":
+            result = await handleFoldersList(args);
+            break;
+          
+          default:
+            throw new Error(`Unknown tool: ${name}`);
+        }
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: result
+            }
+          ]
+        };
+
+      } catch (error: any) {
+        logToFile(`Error handling ${name}: ${error.message}`);
+        
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify({
+                success: false,
+                error: error.message || 'Unknown error occurred'
+              }, null, 2)
+            }
+          ],
+          isError: true
+        };
+      }
+    });
 
     // Create transport and connect
     const transport = new StdioServerTransport();
     await server.connect(transport);
 
-    logToFile("SMTP MCP Server started successfully");
-    
-    // Keep the process alive when run directly
-    console.log("SMTP MCP Server running. Press Ctrl+C to exit.");
-    
-    // Handle stdin to keep the process running
-    process.stdin.resume();
-    
-    // Handle process termination
-    process.on('SIGINT', () => {
-      logToFile("Server shutting down due to SIGINT");
-      process.exit(0);
-    });
-    
-    process.on('SIGTERM', () => {
-      logToFile("Server shutting down due to SIGTERM");
-      process.exit(0);
-    });
-    
+    logToFile("Email MCP Server started successfully");
+
   } catch (error) {
     logToFile(`Server failed to start: ${error}`);
     process.exit(1);

@@ -1,230 +1,87 @@
-# SMTP Email MCP Server
+# Email MCP Server
 
-A Model Context Protocol (MCP) server that provides email sending capabilities for Claude and other MCP-compatible AI assistants.
+A clean, simple MCP server for email operations (SMTP + IMAP).
 
 ## Features
 
-- **Multiple SMTP Configurations**: Configure and manage multiple SMTP servers
-- **Email Templates**: Create, update, and use reusable email templates
-- **Bulk Email Sending**: Send emails to multiple recipients with batching and rate limiting
-- **HTML Support**: Full HTML support for rich email content
-- **Logging**: Comprehensive logging of all email activities
-- **Template Variables**: Dynamic content using template variables
+- ✅ **Send emails** (HTML + attachments)
+- ✅ **Search emails** (flexible filters)
+- ✅ **Reply/Forward** (with threading)
+- ✅ **Organize** (mark read, archive, flag)
+- ✅ **List folders**
 
-## Installation
+## Quick Start
+
+### 1. Install
 
 ```bash
-# Clone the repository
-git clone https://github.com/samihalawa/mcp-server-smtp.git
-cd mcp-server-smtp
-
-# Install dependencies
 npm install
-
-# Build the server
 npm run build
 ```
 
-## Usage
+### 2. Configure
 
-### Starting the Server
+Create `.env`:
 
-```bash
-npm start
+```env
+EMAIL_ACCOUNTS_JSON={"icloud":{"smtp":{"host":"smtp.mail.me.com","port":587,"user":"your@icloud.com","password":"your-app-password"},"imap":{"host":"imap.mail.me.com","port":993},"default_from_name":"Your Name","sender_emails":["your@icloud.com","alias@domain.com"]}}
+DEFAULT_EMAIL_ACCOUNT=icloud
 ```
 
-### Configuration
+### 3. Add to MCP-Supported Software
 
-Add the server to your MCP configuration:
+#### Claude Desktop
+
+Add to your `claude_desktop_config.json`:
+
+**macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+**Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
 
 ```json
 {
-  "servers": {
-    "smtp-email-server": {
-      "command": "/path/to/node",
-      "args": ["/path/to/mcp-server-smtp/build/index.js"],
-      "enabled": true,
-      "port": 3007,
-      "environment": {
-        "NODE_PATH": "/path/to/node_modules",
-        "PATH": "/usr/local/bin:/usr/bin:/bin"
+  "mcpServers": {
+    "email": {
+      "command": "node",
+      "args": ["/absolute/path/to/email-smtp-imap-mcp/build/index.js"],
+      "env": {
+        "EMAIL_ACCOUNTS_JSON": "{\"icloud\":{\"smtp\":{\"host\":\"smtp.mail.me.com\",\"port\":587,\"user\":\"your@icloud.com\",\"password\":\"your-app-password\"},\"imap\":{\"host\":\"imap.mail.me.com\",\"port\":993},\"default_from_name\":\"Your Name\",\"sender_emails\":[\"your@icloud.com\"]}}",
+        "DEFAULT_EMAIL_ACCOUNT": "icloud"
       }
     }
   }
 }
 ```
 
-### Available Tools
+**Note**: Replace `/absolute/path/to/email-smtp-imap-mcp` with your actual installation path. You can also use a `.env` file instead of inline env config.
 
-#### send-email
+Restart Claude Desktop to load the MCP server.
 
-Send an email to one or more recipients.
+## 5 Tools
 
-Parameters:
-- `to`: Array of recipients with email and optional name
-- `subject`: Email subject
-- `body`: Email body (HTML supported)
-- `from`: (Optional) Sender email and name
-- `cc`: (Optional) CC recipients
-- `bcc`: (Optional) BCC recipients
-- `templateId`: (Optional) ID of a template to use
-- `templateData`: (Optional) Data to populate template variables
-- `smtpConfigId`: (Optional) ID of the SMTP configuration to use
+| Tool | Purpose |
+|------|---------|
+| `emails_find` | Search emails with filters |
+| `emails_modify` | Mark read, archive, flag |
+| `email_send` | Send new emails |
+| `email_respond` | Reply or forward |
+| `folders_list` | List folders |
 
-#### send-bulk-emails
+## Usage Examples
 
-Send emails to multiple recipients in batches.
+```
+"Find unread emails from last week"
+"Send an email to team@company.com"
+"Reply to the last email from John"
+"Archive all emails older than 30 days"
+"List my email folders"
+```
 
-Parameters:
-- `recipients`: Array of recipients with email and optional name
-- `subject`: Email subject
-- `body`: Email body (HTML supported)
-- `from`: (Optional) Sender email and name
-- `cc`: (Optional) CC recipients
-- `bcc`: (Optional) BCC recipients
-- `templateId`: (Optional) ID of a template to use
-- `templateData`: (Optional) Data to populate template variables
-- `batchSize`: (Optional) Number of emails to send in each batch
-- `delayBetweenBatches`: (Optional) Delay in milliseconds between batches
-- `smtpConfigId`: (Optional) ID of the SMTP configuration to use
+## Documentation
 
-#### get-smtp-configs
-
-Get all configured SMTP servers.
-
-Parameters: None
-
-#### add-smtp-config
-
-Add a new SMTP server configuration.
-
-Parameters:
-- `name`: Name for the configuration
-- `host`: SMTP server hostname
-- `port`: SMTP server port
-- `secure`: Whether to use SSL/TLS
-- `auth`: Authentication credentials (user and pass)
-- `isDefault`: (Optional) Whether this is the default configuration
-
-#### update-smtp-config
-
-Update an existing SMTP server configuration.
-
-Parameters:
-- `id`: ID of the configuration to update
-- `name`: Name for the configuration
-- `host`: SMTP server hostname
-- `port`: SMTP server port
-- `secure`: Whether to use SSL/TLS
-- `auth`: Authentication credentials (user and pass)
-- `isDefault`: (Optional) Whether this is the default configuration
-
-#### delete-smtp-config
-
-Delete an SMTP server configuration.
-
-Parameters:
-- `id`: ID of the configuration to delete
-
-#### get-email-templates
-
-Get all email templates.
-
-Parameters: None
-
-#### add-email-template
-
-Add a new email template.
-
-Parameters:
-- `name`: Template name
-- `subject`: Email subject template
-- `body`: Email body template (HTML supported)
-- `isDefault`: (Optional) Whether this is the default template
-
-#### update-email-template
-
-Update an existing email template.
-
-Parameters:
-- `id`: ID of the template to update
-- `name`: Template name
-- `subject`: Email subject template
-- `body`: Email body template (HTML supported)
-- `isDefault`: (Optional) Whether this is the default template
-
-#### delete-email-template
-
-Delete an email template.
-
-Parameters:
-- `id`: ID of the template to delete
-
-#### get-email-logs
-
-Get logs of sent emails.
-
-Parameters: None
-
-## Example Usage
-
-1. Configure an SMTP server:
-   ```
-   add-smtp-config(
-     name: "Gmail",
-     host: "smtp.gmail.com",
-     port: 587,
-     secure: false,
-     auth: {
-       user: "your-email@gmail.com",
-       pass: "your-app-password"
-     },
-     isDefault: true
-   )
-   ```
-
-2. Create an email template:
-   ```
-   add-email-template(
-     name: "Welcome Email",
-     subject: "Welcome to {{company}}!",
-     body: "<h1>Hello {{name}},</h1><p>Welcome to {{company}}!</p>",
-     isDefault: false
-   )
-   ```
-
-3. Send an email using a template:
-   ```
-   send-email(
-     to: [{ email: "recipient@example.com", name: "John Doe" }],
-     templateId: "welcome-email",
-     templateData: {
-       name: "John",
-       company: "ACME Corp"
-     }
-   )
-   ```
-
-4. Send bulk emails:
-   ```
-   send-bulk-emails(
-     recipients: [
-       { email: "user1@example.com", name: "User 1" },
-       { email: "user2@example.com", name: "User 2" }
-     ],
-     subject: "Important Announcement",
-     body: "<p>This is an important announcement.</p>",
-     batchSize: 10,
-     delayBetweenBatches: 1000
-   )
-   ```
-
-## Requirements
-
-- Node.js 14+
-- Nodemailer for email sending
-- Access to an SMTP server
+- **QUICK_REFERENCE.md** - Command examples
+- **DESIGN.md** - Architecture details
+- **SETUP_COMPLETE.md** - Full setup guide
 
 ## License
 
-MIT 
+MIT

@@ -1,32 +1,40 @@
 {
-  "name": "mcp-smtp-server",
-  "version": "1.0.0",
-  "description": "SMTP Email MCP Server with template management",
+  "name": "email-mcp-server",
+  "version": "2.0.0",
+  "description": "Email MCP Server with SMTP and IMAP support - simple, clean, and flexible",
   "main": "build/index.js",
   "type": "module",
   "bin": {
-    "mcp-smtp-server": "build/index.js",
-    "mcp-smtp-server-smithery": "scripts/start-smithery.js"
+    "email-mcp-server": "build/index.js"
   },
   "scripts": {
     "build": "tsc && chmod +x build/index.js",
     "start": "node build/index.js",
     "watch": "tsc --watch",
     "prepare": "npm run build",
-    "dev": "npm run build && npm start",
-    "smithery:publish": "./scripts/publish-to-smithery.sh",
-    "smithery:api-publish": "node scripts/smithery-api-publish.js"
+    "dev": "npm run build && npm start"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.4.1",
-    "fs-extra": "^11.1.1",
-    "node-fetch": "^3.3.2",
+    "dotenv": "^17.2.3",
+    "imapflow": "^1.1.1",
+    "mailparser": "^3.9.0",
     "nodemailer": "^6.10.0"
   },
   "devDependencies": {
-    "@types/fs-extra": "^11.0.4",
-    "@types/node": "^20.8.2",
-    "@types/nodemailer": "^6.4.13",
+    "@types/mailparser": "^3.4.6",
+    "@types/node": "^24.10.1",
+    "@types/nodemailer": "^7.0.3",
     "typescript": "^5.2.2"
-  }
+  },
+  "keywords": [
+    "mcp",
+    "email",
+    "smtp",
+    "imap",
+    "ai",
+    "assistant"
+  ],
+  "author": "Sami Halawa",
+  "license": "MIT"
 }
