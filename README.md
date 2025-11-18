@@ -10,39 +10,40 @@ A clean, simple MCP server for email operations (SMTP + IMAP).
 - ✅ **Organize** (mark read, archive, flag)
 - ✅ **List folders**
 
-## Quick Start
+## Installation
 
-### 1. Install
+### Option 1: NPM (Recommended)
 
 ```bash
+npm install -g email-smtp-imap-mcp
+```
+
+### Option 2: From Source
+
+```bash
+git clone https://github.com/samihalawa/email-smtp-imap-mcp.git
+cd email-smtp-imap-mcp
 npm install
 npm run build
 ```
 
-### 2. Configure
+## Configuration
 
-Create `.env`:
+### For Claude Desktop
 
-```env
-EMAIL_ACCOUNTS_JSON={"icloud":{"smtp":{"host":"smtp.mail.me.com","port":587,"user":"your@icloud.com","password":"your-app-password"},"imap":{"host":"imap.mail.me.com","port":993},"default_from_name":"Your Name","sender_emails":["your@icloud.com","alias@domain.com"]}}
-DEFAULT_EMAIL_ACCOUNT=icloud
-```
+**Config file locations:**
+- **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
 
-### 3. Add to MCP-Supported Software
+### Method 1: Using NPM Global Install
 
-#### Claude Desktop
-
-Add to your `claude_desktop_config.json`:
-
-**macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
-**Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+Add this to your `claude_desktop_config.json`:
 
 ```json
 {
   "mcpServers": {
     "email": {
-      "command": "node",
-      "args": ["/absolute/path/to/email-smtp-imap-mcp/build/index.js"],
+      "command": "email-mcp-server",
       "env": {
         "EMAIL_ACCOUNTS_JSON": "{\"icloud\":{\"smtp\":{\"host\":\"smtp.mail.me.com\",\"port\":587,\"user\":\"your@icloud.com\",\"password\":\"your-app-password\"},\"imap\":{\"host\":\"imap.mail.me.com\",\"port\":993},\"default_from_name\":\"Your Name\",\"sender_emails\":[\"your@icloud.com\"]}}",
         "DEFAULT_EMAIL_ACCOUNT": "icloud"
@@ -52,9 +53,53 @@ Add to your `claude_desktop_config.json`:
 }
 ```
 
-**Note**: Replace `/absolute/path/to/email-smtp-imap-mcp` with your actual installation path. You can also use a `.env` file instead of inline env config.
+### Method 2: Using Local Build
 
-Restart Claude Desktop to load the MCP server.
+Add this to your `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "email": {
+      "command": "node",
+      "args": ["/ABSOLUTE/PATH/TO/email-smtp-imap-mcp/build/index.js"],
+      "env": {
+        "EMAIL_ACCOUNTS_JSON": "{\"icloud\":{\"smtp\":{\"host\":\"smtp.mail.me.com\",\"port\":587,\"user\":\"your@icloud.com\",\"password\":\"your-app-password\"},\"imap\":{\"host\":\"imap.mail.me.com\",\"port\":993},\"default_from_name\":\"Your Name\",\"sender_emails\":[\"your@icloud.com\"]}}",
+        "DEFAULT_EMAIL_ACCOUNT": "icloud"
+      }
+    }
+  }
+}
+```
+
+**Replace `/ABSOLUTE/PATH/TO/email-smtp-imap-mcp` with your actual path.**
+
+### Method 3: Using .env File (Cleaner)
+
+1. Create `.env` file in your home directory or project:
+
+```env
+EMAIL_ACCOUNTS_JSON={"icloud":{"smtp":{"host":"smtp.mail.me.com","port":587,"user":"your@icloud.com","password":"your-app-password"},"imap":{"host":"imap.mail.me.com","port":993},"default_from_name":"Your Name","sender_emails":["your@icloud.com","alias@domain.com"]}}
+DEFAULT_EMAIL_ACCOUNT=icloud
+```
+
+2. Add to `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "email": {
+      "command": "email-mcp-server"
+    }
+  }
+}
+```
+
+**The server will automatically load from `.env` file.**
+
+---
+
+**⚠️ Important**: Restart Claude Desktop after configuration changes.
 
 ## 5 Tools
 
