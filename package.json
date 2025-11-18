@@ -1,12 +1,19 @@
 {
-  "name": "email-mcp-server",
+  "name": "email-smtp-imap-mcp",
   "version": "2.0.0",
   "description": "Email MCP Server with SMTP and IMAP support - simple, clean, and flexible",
   "main": "build/index.js",
+  "types": "build/index.d.ts",
   "type": "module",
   "bin": {
     "email-mcp-server": "build/index.js"
   },
+  "files": [
+    "build/",
+    "README.md",
+    "LICENSE",
+    ".env.example"
+  ],
   "scripts": {
     "build": "tsc && chmod +x build/index.js",
     "start": "node build/index.js",
@@ -33,8 +40,23 @@
     "smtp",
     "imap",
     "ai",
-    "assistant"
+    "assistant",
+    "model-context-protocol",
+    "claude",
+    "nodemailer",
+    "imapflow"
   ],
-  "author": "Sami Halawa",
-  "license": "MIT"
+  "author": "Sami Halawa <sami@example.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/samihalawa/email-smtp-imap-mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/samihalawa/email-smtp-imap-mcp/issues"
+  },
+  "homepage": "https://github.com/samihalawa/email-smtp-imap-mcp#readme",
+  "engines": {
+    "node": ">=18.0.0"
+  }
 }
