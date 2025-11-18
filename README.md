@@ -29,23 +29,19 @@ npm run build
 
 ## Configuration
 
-### For Claude Desktop
+Add to your `claude_desktop_config.json`:
 
-**Config file locations:**
-- **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
-- **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
-
-### Method 1: Using NPM Global Install
-
-Add this to your `claude_desktop_config.json`:
+**macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+**Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
 
 ```json
 {
   "mcpServers": {
     "email": {
-      "command": "email-mcp-server",
+      "command": "npx",
+      "args": ["-y", "email-smtp-imap-mcp"],
       "env": {
-        "EMAIL_ACCOUNTS_JSON": "{\"icloud\":{\"smtp\":{\"host\":\"smtp.mail.me.com\",\"port\":587,\"user\":\"your@icloud.com\",\"password\":\"your-app-password\"},\"imap\":{\"host\":\"imap.mail.me.com\",\"port\":993},\"default_from_name\":\"Your Name\",\"sender_emails\":[\"your@icloud.com\"]}}",
+        "EMAIL_ACCOUNTS_JSON": "{\"icloud\":{\"smtp\":{\"host\":\"smtp.mail.me.com\",\"port\":587,\"user\":\"your@icloud.com\",\"password\":\"your-app-password\"},\"imap\":{\"host\":\"imap.mail.me.com\",\"port\":993},\"default_from_name\":\"Your Name\",\"sender_emails\":[\"your@icloud.com\",\"alias@domain.com\"]}}",
         "DEFAULT_EMAIL_ACCOUNT": "icloud"
       }
     }
@@ -53,53 +49,41 @@ Add this to your `claude_desktop_config.json`:
 }
 ```
 
-### Method 2: Using Local Build
+**Replace** `your@icloud.com`, `your-app-password`, and `Your Name` with your actual credentials.
 
-Add this to your `claude_desktop_config.json`:
+### Email Provider Settings
 
-```json
-{
-  "mcpServers": {
-    "email": {
-      "command": "node",
-      "args": ["/ABSOLUTE/PATH/TO/email-smtp-imap-mcp/build/index.js"],
-      "env": {
-        "EMAIL_ACCOUNTS_JSON": "{\"icloud\":{\"smtp\":{\"host\":\"smtp.mail.me.com\",\"port\":587,\"user\":\"your@icloud.com\",\"password\":\"your-app-password\"},\"imap\":{\"host\":\"imap.mail.me.com\",\"port\":993},\"default_from_name\":\"Your Name\",\"sender_emails\":[\"your@icloud.com\"]}}",
-        "DEFAULT_EMAIL_ACCOUNT": "icloud"
-      }
-    }
-  }
-}
-```
-
-**Replace `/ABSOLUTE/PATH/TO/email-smtp-imap-mcp` with your actual path.**
-
-### Method 3: Using .env File (Cleaner)
-
-1. Create `.env` file in your home directory or project:
-
-```env
-EMAIL_ACCOUNTS_JSON={"icloud":{"smtp":{"host":"smtp.mail.me.com","port":587,"user":"your@icloud.com","password":"your-app-password"},"imap":{"host":"imap.mail.me.com","port":993},"default_from_name":"Your Name","sender_emails":["your@icloud.com","alias@domain.com"]}}
-DEFAULT_EMAIL_ACCOUNT=icloud
-```
-
-2. Add to `claude_desktop_config.json`:
+<details>
+<summary>📧 iCloud Mail</summary>
 
 ```json
-{
-  "mcpServers": {
-    "email": {
-      "command": "email-mcp-server"
-    }
-  }
-}
+"EMAIL_ACCOUNTS_JSON": "{\"icloud\":{\"smtp\":{\"host\":\"smtp.mail.me.com\",\"port\":587,\"user\":\"your@icloud.com\",\"password\":\"app-specific-password\"},\"imap\":{\"host\":\"imap.mail.me.com\",\"port\":993},\"default_from_name\":\"Your Name\",\"sender_emails\":[\"your@icloud.com\"]}}"
 ```
 
-**The server will automatically load from `.env` file.**
+**Note**: Use [app-specific password](https://support.apple.com/en-us/102654), not your iCloud password.
+</details>
+
+<details>
+<summary>📧 Gmail</summary>
+
+```json
+"EMAIL_ACCOUNTS_JSON": "{\"gmail\":{\"smtp\":{\"host\":\"smtp.gmail.com\",\"port\":587,\"user\":\"your@gmail.com\",\"password\":\"app-password\"},\"imap\":{\"host\":\"imap.gmail.com\",\"port\":993},\"default_from_name\":\"Your Name\",\"sender_emails\":[\"your@gmail.com\"]}}"
+```
+
+**Note**: Use [app password](https://support.google.com/accounts/answer/185833), not your Google password.
+</details>
+
+<details>
+<summary>📧 Outlook/Office 365</summary>
+
+```json
+"EMAIL_ACCOUNTS_JSON": "{\"outlook\":{\"smtp\":{\"host\":\"smtp-mail.outlook.com\",\"port\":587,\"user\":\"your@outlook.com\",\"password\":\"your-password\"},\"imap\":{\"host\":\"outlook.office365.com\",\"port\":993},\"default_from_name\":\"Your Name\",\"sender_emails\":[\"your@outlook.com\"]}}"
+```
+</details>
 
 ---
 
-**⚠️ Important**: Restart Claude Desktop after configuration changes.
+**⚠️ Important**: Restart Claude Desktop after adding configuration.
 
 ## 5 Tools
 
