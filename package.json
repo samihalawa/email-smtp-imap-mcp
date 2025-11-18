@@ -1,12 +1,12 @@
 {
   "name": "email-smtp-imap-mcp",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Email MCP Server with SMTP and IMAP support - simple, clean, and flexible",
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "type": "module",
   "bin": {
-    "email-mcp-server": "build/index.js"
+    "email-smtp-imap-mcp": "build/index.js"
   },
   "files": [
     "build/",
