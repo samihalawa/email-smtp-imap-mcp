@@ -12,7 +12,35 @@ export function loadAccounts(): EmailAccounts {
   const jsonConfig = process.env.EMAIL_ACCOUNTS_JSON;
   if (jsonConfig) {
     try {
-      return JSON.parse(jsonConfig);
+      const parsed = JSON.parse(jsonConfig);
+
+      // Transform nested structure to flat structure
+      const accounts: EmailAccounts = {};
+
+      for (const [accountName, config] of Object.entries(parsed as any)) {
+        const cfg = config as any;
+
+        // Check if this is the new nested format
+        if (cfg.smtp && cfg.imap) {
+          accounts[accountName] = {
+            smtp_host: cfg.smtp.host,
+            smtp_port: cfg.smtp.port || 587,
+            smtp_secure: cfg.smtp.secure !== undefined ? cfg.smtp.secure : false,
+            smtp_user: cfg.smtp.user,
+            smtp_pass: cfg.smtp.password,
+            imap_host: cfg.imap.host,
+            imap_port: cfg.imap.port || 993,
+            imap_secure: cfg.imap.secure !== undefined ? cfg.imap.secure : true,
+            default_from_name: cfg.default_from_name,
+            sender_emails: cfg.sender_emails
+          };
+        } else {
+          // Old flat format - use as is
+          accounts[accountName] = cfg as EmailAccount;
+        }
+      }
+
+      return accounts;
     } catch (error) {
       throw new Error(`Failed to parse EMAIL_ACCOUNTS_JSON: ${error}`);
     }

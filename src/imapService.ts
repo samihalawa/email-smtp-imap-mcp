@@ -61,19 +61,27 @@ export async function searchEmails(
   includeAttachments: boolean = false
 ): Promise<EmailMessage[]> {
   const client = await createImapConnection(account);
-  
+
   try {
     // Open inbox
-    await client.mailboxOpen('INBOX');
+    const mailbox = await client.mailboxOpen('INBOX');
 
     // Build search criteria
     const searchCriteria = buildSearchCriteria(filters);
+
+    // For efficiency: if no specific filters, fetch most recent messages by sequence number
+    let fetchRange: string | any = searchCriteria;
+    if (searchCriteria.all === true && mailbox.exists > 0) {
+      // Fetch last N messages efficiently
+      const start = Math.max(1, mailbox.exists - limit * 3); // Fetch 3x limit to account for filtering
+      fetchRange = `${start}:*`;
+    }
 
     // Search for messages
     const messages: EmailMessage[] = [];
     let count = 0;
 
-    for await (const message of client.fetch(searchCriteria, {
+    for await (const message of client.fetch(fetchRange, {
       uid: true,
       flags: true,
       envelope: true,

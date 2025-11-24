@@ -30,6 +30,7 @@ export async function handleEmailsFind(args: any): Promise<string> {
     return JSON.stringify({
       success: true,
       account: name,
+      total_found: emails.length,
       count: emails.length,
       emails
     }, null, 2);

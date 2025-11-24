@@ -12,6 +12,7 @@ export interface EmailAccount {
   imap_port: number;
   imap_secure: boolean;
   default_from_name?: string;
+  sender_emails?: string[];
 }
 
 export interface EmailAccounts {
