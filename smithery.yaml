@@ -1,0 +1,35 @@
+version: 1
+startCommand:
+  type: stdio
+  configSchema:
+    type: object
+    required:
+      - EMAIL_ACCOUNTS_JSON
+    properties:
+      EMAIL_ACCOUNTS_JSON:
+        type: string
+        description: "JSON string containing email account configurations with SMTP and IMAP settings. Each account should have smtp (host, port, user, password) and imap (host, port) properties, along with default_from_name and sender_emails array."
+      DEFAULT_EMAIL_ACCOUNT:
+        type: string
+        description: "Default email account name to use (e.g., 'icloud', 'gmail')"
+        default: "default"
+  commandFunction: |-
+    (config) => ({
+      command: 'npx',
+      args: ['-y', 'email-smtp-imap-mcp@latest'],
+      env: {
+        EMAIL_ACCOUNTS_JSON: config.EMAIL_ACCOUNTS_JSON,
+        DEFAULT_EMAIL_ACCOUNT: config.DEFAULT_EMAIL_ACCOUNT || 'default'
+      }
+    })
+exampleConfig:
+  EMAIL_ACCOUNTS_JSON: '{"default":{"smtp":{"host":"smtp.example.com","port":587,"user":"user@example.com","password":"your-password"},"imap":{"host":"imap.example.com","port":993},"default_from_name":"Your Name","sender_emails":["user@example.com"]}}'
+  DEFAULT_EMAIL_ACCOUNT: "default"
+description: "📧 Email SMTP/IMAP MCP Server - Send, receive, and manage emails through SMTP and IMAP protocols"
+tags:
+  - "email"
+  - "smtp"
+  - "imap"
+  - "mail"
+  - "communication"
+  - "nodemailer"
