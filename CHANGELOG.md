@@ -9,11 +9,19 @@
   - Location: `src/accountManager.ts:10-45`
 
 ### Performance
-- **Optimization**: Improved email search for large mailboxes (3000+ messages)
-  - Changed from scanning all messages to fetching only recent ones
-  - Fetches last N*3 messages instead of entire mailbox
-  - Reduces search time from 30+ seconds to <3 seconds
-  - Location: `src/imapService.ts:67-78`
+- **Critical Fix**: Resolved 60+ second timeout issue in email fetch operations
+  - Root cause: ImapFlow socket timeout during message iteration
+  - Solution: Optimized fetch strategy for unfiltered searches
+    - Fetch exact sequence range (last N messages) instead of search-then-fetch
+    - Direct sequence number access: `(mailbox.exists - limit + 1):mailbox.exists`
+    - Sort and limit results after fetching
+  - Performance improvement: 65+ seconds → <10 seconds for typical operations
+  - Added comprehensive timeout configuration:
+    - connectionTimeout: 15s
+    - greetingTimeout: 10s
+    - socketTimeout: 60s
+    - Operation timeout: 90s
+  - Location: `src/imapService.ts:12-254`
 
 ### Added
 - Support for `sender_emails` field in account configuration

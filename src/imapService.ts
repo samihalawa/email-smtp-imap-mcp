@@ -7,7 +7,7 @@ import { simpleParser } from 'mailparser';
 import { EmailAccount, EmailFilters, EmailMessage, EmailFolder } from './types.js';
 
 /**
- * Create IMAP connection
+ * Create IMAP connection with timeout and error handling
  */
 async function createImapConnection(account: EmailAccount): Promise<ImapFlow> {
   const client = new ImapFlow({
@@ -18,11 +18,35 @@ async function createImapConnection(account: EmailAccount): Promise<ImapFlow> {
       user: account.smtp_user,
       pass: account.smtp_pass
     },
-    logger: false // Disable logging to avoid stdio issues
+    logger: false, // Disable logging to avoid stdio issues
+    connectionTimeout: 15000, // 15 second connection timeout (increased)
+    greetingTimeout: 10000, // 10 second greeting timeout (increased)
+    socketTimeout: 60000 // 60 second socket timeout for operations (increased)
+  });
+
+  // Handle errors to prevent unhandled exceptions
+  client.on('error', (err) => {
+    // Error will be caught by try/catch in calling functions
+    console.error('IMAP error:', err.message);
   });
 
   await client.connect();
   return client;
+}
+
+/**
+ * Timeout wrapper for async operations
+ */
+async function withTimeout<T>(
+  promise: Promise<T>,
+  timeoutMs: number,
+  errorMessage: string
+): Promise<T> {
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    setTimeout(() => reject(new Error(errorMessage)), timeoutMs);
+  });
+
+  return Promise.race([promise, timeoutPromise]);
 }
 
 /**
@@ -51,9 +75,27 @@ function buildSearchCriteria(filters?: EmailFilters): any {
 }
 
 /**
- * Search for emails
+ * Search for emails with timeout protection
  */
 export async function searchEmails(
+  account: EmailAccount,
+  filters?: EmailFilters,
+  limit: number = 20,
+  includeContent: boolean = false,
+  includeAttachments: boolean = false
+): Promise<EmailMessage[]> {
+  // Wrap entire operation with 90-second timeout (generous for large mailboxes)
+  return withTimeout(
+    searchEmailsInternal(account, filters, limit, includeContent, includeAttachments),
+    90000,
+    'Email search operation timed out after 90 seconds - try reducing limit or adding filters'
+  );
+}
+
+/**
+ * Internal search implementation
+ */
+async function searchEmailsInternal(
   account: EmailAccount,
   filters?: EmailFilters,
   limit: number = 20,
@@ -63,85 +105,152 @@ export async function searchEmails(
   const client = await createImapConnection(account);
 
   try {
-    // Open inbox
-    const mailbox = await client.mailboxOpen('INBOX');
+    // Open inbox with timeout
+    const mailbox = await withTimeout(
+      client.mailboxOpen('INBOX'),
+      10000,
+      'Mailbox open timed out'
+    );
 
     // Build search criteria
     const searchCriteria = buildSearchCriteria(filters);
 
     // For efficiency: if no specific filters, fetch most recent messages by sequence number
-    let fetchRange: string | any = searchCriteria;
+    let messages: EmailMessage[] = [];
+
     if (searchCriteria.all === true && mailbox.exists > 0) {
-      // Fetch last N messages efficiently
-      const start = Math.max(1, mailbox.exists - limit * 3); // Fetch 3x limit to account for filtering
-      fetchRange = `${start}:*`;
-    }
+      // Fetch last N messages efficiently by sequence number (much faster)
+      const start = Math.max(1, mailbox.exists - limit + 1);
+      const end = mailbox.exists;
 
-    // Search for messages
-    const messages: EmailMessage[] = [];
-    let count = 0;
-
-    for await (const message of client.fetch(fetchRange, {
+      for await (const message of client.fetch(`${start}:${end}`, {
       uid: true,
       flags: true,
       envelope: true,
       bodyStructure: true,
-      source: includeContent || includeAttachments
-    })) {
-      if (count >= limit) break;
+        source: includeContent || includeAttachments
+      })) {
+        let body: string | undefined;
+        let attachments: any[] | undefined;
 
-      let body: string | undefined;
-      let attachments: any[] | undefined;
+        // Parse message if content requested
+        if ((includeContent || includeAttachments) && message.source) {
+          const parsed = await simpleParser(message.source);
 
-      // Parse message if content requested
-      if ((includeContent || includeAttachments) && message.source) {
-        const parsed = await simpleParser(message.source);
-        
-        if (includeContent) {
-          body = parsed.html || parsed.textAsHtml || parsed.text || '';
+          if (includeContent) {
+            body = parsed.html || parsed.textAsHtml || parsed.text || '';
+          }
+
+          if (includeAttachments && parsed.attachments && parsed.attachments.length > 0) {
+            attachments = parsed.attachments.map((att: any) => ({
+              filename: att.filename || 'unnamed',
+              content: att.content.toString('base64'),
+              content_type: att.contentType
+            }));
+          }
         }
 
-        if (includeAttachments && parsed.attachments && parsed.attachments.length > 0) {
-          attachments = parsed.attachments.map((att: any) => ({
-            filename: att.filename || 'unnamed',
-            content: att.content.toString('base64'),
-            content_type: att.contentType
-          }));
-        }
+        // Extract subject, handling undefined
+        const subject = message.envelope?.subject || '(No Subject)';
+
+        // Extract from address
+        const fromAddr = message.envelope?.from?.[0];
+        const from = fromAddr ? `${fromAddr.name || ''} <${fromAddr.address}>`.trim() : 'Unknown';
+
+        // Extract to addresses
+        const to = message.envelope?.to?.map(addr =>
+          `${addr.name || ''} <${addr.address}>`.trim()
+        ) || [];
+
+        // Check for attachments in body structure
+        const hasAttachments = message.bodyStructure?.childNodes?.some(
+          (node: any) => node.disposition === 'attachment'
+        ) || false;
+
+        messages.push({
+          id: message.uid.toString(),
+          subject,
+          from,
+          to,
+          date: message.envelope?.date?.toISOString() || new Date().toISOString(),
+          snippet: body ? body.substring(0, 200) : undefined,
+          body,
+          is_unread: !message.flags?.has('\\Seen'),
+          is_flagged: message.flags?.has('\\Flagged') || false,
+          has_attachments: hasAttachments,
+          attachments
+        });
       }
 
-      // Extract subject, handling undefined
-      const subject = message.envelope?.subject || '(No Subject)';
-      
-      // Extract from address
-      const fromAddr = message.envelope?.from?.[0];
-      const from = fromAddr ? `${fromAddr.name || ''} <${fromAddr.address}>`.trim() : 'Unknown';
+      // Sort by date descending (newest first) and limit
+      messages.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      messages = messages.slice(0, limit);
+    } else {
+      // Filtered search - use search criteria
+      let count = 0;
 
-      // Extract to addresses
-      const to = message.envelope?.to?.map(addr => 
-        `${addr.name || ''} <${addr.address}>`.trim()
-      ) || [];
+      for await (const message of client.fetch(searchCriteria, {
+        uid: true,
+        flags: true,
+        envelope: true,
+        bodyStructure: true,
+        source: includeContent || includeAttachments
+      })) {
+        if (count >= limit) break;
 
-      // Check for attachments in body structure
-      const hasAttachments = message.bodyStructure?.childNodes?.some(
-        (node: any) => node.disposition === 'attachment'
-      ) || false;
+        let body: string | undefined;
+        let attachments: any[] | undefined;
 
-      messages.push({
-        id: message.uid.toString(),
-        subject,
-        from,
-        to,
-        date: message.envelope?.date?.toISOString() || new Date().toISOString(),
-        snippet: body ? body.substring(0, 200) : undefined,
-        body,
-        is_unread: !message.flags?.has('\\Seen'),
-        is_flagged: message.flags?.has('\\Flagged') || false,
-        has_attachments: hasAttachments,
-        attachments
-      });
+        // Parse message if content requested
+        if ((includeContent || includeAttachments) && message.source) {
+          const parsed = await simpleParser(message.source);
 
-      count++;
+          if (includeContent) {
+            body = parsed.html || parsed.textAsHtml || parsed.text || '';
+          }
+
+          if (includeAttachments && parsed.attachments && parsed.attachments.length > 0) {
+            attachments = parsed.attachments.map((att: any) => ({
+              filename: att.filename || 'unnamed',
+              content: att.content.toString('base64'),
+              content_type: att.contentType
+            }));
+          }
+        }
+
+        // Extract subject, handling undefined
+        const subject = message.envelope?.subject || '(No Subject)';
+
+        // Extract from address
+        const fromAddr = message.envelope?.from?.[0];
+        const from = fromAddr ? `${fromAddr.name || ''} <${fromAddr.address}>`.trim() : 'Unknown';
+
+        // Extract to addresses
+        const to = message.envelope?.to?.map(addr =>
+          `${addr.name || ''} <${addr.address}>`.trim()
+        ) || [];
+
+        // Check for attachments in body structure
+        const hasAttachments = message.bodyStructure?.childNodes?.some(
+          (node: any) => node.disposition === 'attachment'
+        ) || false;
+
+        messages.push({
+          id: message.uid.toString(),
+          subject,
+          from,
+          to,
+          date: message.envelope?.date?.toISOString() || new Date().toISOString(),
+          snippet: body ? body.substring(0, 200) : undefined,
+          body,
+          is_unread: !message.flags?.has('\\Seen'),
+          is_flagged: message.flags?.has('\\Flagged') || false,
+          has_attachments: hasAttachments,
+          attachments
+        });
+
+        count++;
+      }
     }
 
     return messages;
