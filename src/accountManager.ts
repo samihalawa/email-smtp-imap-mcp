@@ -60,8 +60,14 @@ export function loadAccounts(): EmailAccounts {
   };
 
   // Validate single account has required fields
-  if (!singleAccount.smtp_host || !singleAccount.smtp_user || !singleAccount.smtp_pass) {
-    throw new Error('Email account configuration not found. Set EMAIL_ACCOUNTS_JSON or individual SMTP_* variables.');
+  const missingFields: string[] = [];
+  if (!singleAccount.smtp_host) missingFields.push('SMTP_HOST');
+  if (!singleAccount.smtp_user) missingFields.push('SMTP_USER');
+  if (!singleAccount.smtp_pass) missingFields.push('SMTP_PASS');
+  if (!singleAccount.imap_host) missingFields.push('IMAP_HOST');
+
+  if (missingFields.length > 0) {
+    throw new Error(`Missing required email configuration: ${missingFields.join(', ')}. Set EMAIL_ACCOUNTS_JSON or individual environment variables.`);
   }
 
   // Use DEFAULT_EMAIL_ACCOUNT as the account name, or "default"

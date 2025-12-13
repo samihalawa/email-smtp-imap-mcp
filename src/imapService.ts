@@ -10,27 +10,56 @@ import { EmailAccount, EmailFilters, EmailMessage, EmailFolder } from './types.j
  * Create IMAP connection with timeout and error handling
  */
 async function createImapConnection(account: EmailAccount): Promise<ImapFlow> {
+  // Validate account configuration
+  if (!account.imap_host) {
+    throw new Error('IMAP host not configured. Set IMAP_HOST or EMAIL_ACCOUNTS_JSON with imap.host');
+  }
+  if (!account.smtp_user) {
+    throw new Error('IMAP user not configured. Set SMTP_USER or EMAIL_ACCOUNTS_JSON with smtp.user');
+  }
+  if (!account.smtp_pass) {
+    throw new Error('IMAP password not configured. Set SMTP_PASS or EMAIL_ACCOUNTS_JSON with smtp.password');
+  }
+
   const client = new ImapFlow({
     host: account.imap_host,
-    port: account.imap_port,
-    secure: account.imap_secure,
+    port: account.imap_port || 993,
+    secure: account.imap_secure !== false, // Default to true
     auth: {
       user: account.smtp_user,
       pass: account.smtp_pass
     },
     logger: false, // Disable logging to avoid stdio issues
-    connectionTimeout: 15000, // 15 second connection timeout (increased)
-    greetingTimeout: 10000, // 10 second greeting timeout (increased)
-    socketTimeout: 60000 // 60 second socket timeout for operations (increased)
+    connectionTimeout: 15000, // 15 second connection timeout
+    greetingTimeout: 10000, // 10 second greeting timeout
+    socketTimeout: 60000 // 60 second socket timeout for operations
   });
 
   // Handle errors to prevent unhandled exceptions
-  client.on('error', (err) => {
+  client.on('error', (err: any) => {
     // Error will be caught by try/catch in calling functions
-    console.error('IMAP error:', err.message);
+    // Don't use console.error as it may interfere with MCP stdio
   });
 
-  await client.connect();
+  try {
+    await client.connect();
+  } catch (error: any) {
+    const message = error.message || String(error);
+    if (message.includes('ECONNREFUSED')) {
+      throw new Error(`Connection refused to ${account.imap_host}:${account.imap_port}. Check IMAP host/port settings.`);
+    }
+    if (message.includes('ETIMEDOUT') || message.includes('timeout')) {
+      throw new Error(`Connection timed out to ${account.imap_host}:${account.imap_port}. Check network/firewall.`);
+    }
+    if (message.includes('certificate') || message.includes('SSL') || message.includes('TLS')) {
+      throw new Error(`SSL/TLS error connecting to ${account.imap_host}. Try setting imap_secure to ${!account.imap_secure}.`);
+    }
+    if (message.includes('Invalid credentials') || message.includes('authentication') || message.includes('AUTH') || message.includes('login')) {
+      throw new Error(`Authentication failed for ${account.smtp_user}. Check username/password.`);
+    }
+    throw new Error(`IMAP connection failed: ${message}`);
+  }
+
   return client;
 }
 
@@ -325,18 +354,34 @@ export async function modifyEmails(
 }
 
 /**
- * List folders
+ * List folders with timeout protection
  */
 export async function listFolders(
   account: EmailAccount,
   includeCounts: boolean = false
 ): Promise<EmailFolder[]> {
-  const client = await createImapConnection(account);
-  
+  // Wrap entire operation with 30-second timeout
+  return withTimeout(
+    listFoldersInternal(account, includeCounts),
+    30000,
+    'Folder list operation timed out after 30 seconds'
+  );
+}
+
+/**
+ * Internal list folders implementation
+ */
+async function listFoldersInternal(
+  account: EmailAccount,
+  includeCounts: boolean = false
+): Promise<EmailFolder[]> {
+  let client: ImapFlow | null = null;
+
   try {
+    client = await createImapConnection(account);
     const folders: EmailFolder[] = [];
     const mailboxList = await client.list();
-    
+
     for (const mailbox of mailboxList) {
       const folder: EmailFolder = {
         name: mailbox.name,
@@ -359,8 +404,24 @@ export async function listFolders(
 
     return folders;
 
+  } catch (error: any) {
+    // Re-throw with more context
+    const message = error.message || String(error);
+    if (message.includes('ECONNREFUSED') || message.includes('ETIMEDOUT')) {
+      throw new Error(`Cannot connect to IMAP server (${account.imap_host}:${account.imap_port}): ${message}`);
+    }
+    if (message.includes('Invalid credentials') || message.includes('authentication') || message.includes('AUTH')) {
+      throw new Error(`IMAP authentication failed for ${account.smtp_user}: ${message}`);
+    }
+    throw new Error(`IMAP error: ${message}`);
   } finally {
-    await client.logout();
+    if (client) {
+      try {
+        await client.logout();
+      } catch (e) {
+        // Ignore logout errors
+      }
+    }
   }
 }
 
