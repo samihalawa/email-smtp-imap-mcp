@@ -1,2 +1,60 @@
-runtime: typescript
-target: local
+startCommand:
+  type: stdio
+  configSchema:
+    type: object
+    properties:
+      EMAIL_ACCOUNTS_JSON:
+        type: string
+        description: "JSON configuration for multiple email accounts with SMTP and IMAP settings"
+      DEFAULT_EMAIL_ACCOUNT:
+        type: string
+        description: "Name of the default email account to use"
+      SMTP_HOST:
+        type: string
+        description: "SMTP server hostname (for single account setup)"
+      SMTP_PORT:
+        type: number
+        default: 587
+        description: "SMTP server port"
+      SMTP_SECURE:
+        type: boolean
+        default: false
+        description: "Use TLS for SMTP connection"
+      SMTP_USER:
+        type: string
+        description: "SMTP username/email"
+      SMTP_PASS:
+        type: string
+        description: "SMTP password or app-specific password"
+      IMAP_HOST:
+        type: string
+        description: "IMAP server hostname"
+      IMAP_PORT:
+        type: number
+        default: 993
+        description: "IMAP server port"
+      IMAP_SECURE:
+        type: boolean
+        default: true
+        description: "Use TLS for IMAP connection"
+      DEFAULT_FROM_NAME:
+        type: string
+        description: "Default sender name for outgoing emails"
+  commandFunction: |
+    (config) => ({
+      command: 'node',
+      args: ['build/index.js'],
+      env: {
+        EMAIL_ACCOUNTS_JSON: config.EMAIL_ACCOUNTS_JSON || '',
+        DEFAULT_EMAIL_ACCOUNT: config.DEFAULT_EMAIL_ACCOUNT || '',
+        SMTP_HOST: config.SMTP_HOST || '',
+        SMTP_PORT: String(config.SMTP_PORT || 587),
+        SMTP_SECURE: String(config.SMTP_SECURE || false),
+        SMTP_USER: config.SMTP_USER || '',
+        SMTP_PASS: config.SMTP_PASS || '',
+        IMAP_HOST: config.IMAP_HOST || '',
+        IMAP_PORT: String(config.IMAP_PORT || 993),
+        IMAP_SECURE: String(config.IMAP_SECURE !== false),
+        DEFAULT_FROM_NAME: config.DEFAULT_FROM_NAME || ''
+      }
+    })
