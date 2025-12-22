@@ -5,7 +5,7 @@
  * Supports both SMTP (sending) and IMAP (reading) operations
  */
 
-import 'dotenv/config';
+// import 'dotenv/config'; // Removed as env vars are passed directly
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
@@ -139,12 +139,16 @@ async function runServer() {
 
   } catch (error) {
     logToFile(`Server failed to start: ${error}`);
+    console.error(`Server failed to start: ${error}`);
     process.exit(1);
   }
 }
 
 // Run the server
-runServer().catch((error) => {
+try {
+  runServer();
+} catch (error) {
   logToFile(`Server failed to start: ${error}`);
+  console.error(`Server failed to start: ${error}`);
   process.exit(1);
-}); 
+} 
