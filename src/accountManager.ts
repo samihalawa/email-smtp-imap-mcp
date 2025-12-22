@@ -25,12 +25,12 @@ export function loadAccounts(): EmailAccounts {
           accounts[accountName] = {
             smtp_host: cfg.smtp.host,
             smtp_port: cfg.smtp.port || 587,
-            smtp_secure: cfg.smtp.secure !== undefined ? cfg.smtp.secure : false,
+            smtp_secure: cfg.smtp.secure !== undefined ? cfg.smtp.secure : (cfg.smtp.port === 465),
             smtp_user: cfg.smtp.user,
             smtp_pass: cfg.smtp.password,
             imap_host: cfg.imap.host,
             imap_port: cfg.imap.port || 993,
-            imap_secure: cfg.imap.secure !== undefined ? cfg.imap.secure : true,
+            imap_secure: cfg.imap.secure !== undefined ? cfg.imap.secure : (cfg.imap.port === 993),
             default_from_name: cfg.default_from_name,
             sender_emails: cfg.sender_emails
           };
