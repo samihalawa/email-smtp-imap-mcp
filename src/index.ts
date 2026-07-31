@@ -68,7 +68,7 @@ async function runServer() {
     logToFile("SMTP MCP Server started successfully");
     
     // Keep the process alive when run directly
-    console.log("SMTP MCP Server running. Press Ctrl+C to exit.");
+    console.error("SMTP MCP Server running. Press Ctrl+C to exit.");
     
     // Handle stdin to keep the process running
     process.stdin.resume();
