@@ -56,84 +56,97 @@ export async function setupRequestHandlers(
   server.setRequestHandler(
     CallToolRequestSchema,
     async (request) => {
-      const toolName = request.params.name;
-      const toolParams = request.params.arguments || {};
+      const result = await dispatchTool(
+        tools,
+        request.params.name,
+        request.params.arguments || {}
+      );
 
-      // Check if the tool exists
-      if (!tools[toolName]) {
-        throw new Error(`Tool '${toolName}' not found`);
-      }
-
-      // Execute the tool based on its name
-      switch (toolName) {
-        case "send-email":
-          return await handleSendEmail(toolParams);
-        
-        case "send-bulk-emails":
-          return await handleSendBulkEmails(toolParams);
-        
-        case "get-smtp-configs":
-          return await handleGetSmtpConfigs();
-        
-        case "add-smtp-config":
-          return await handleAddSmtpConfig(toolParams);
-        
-        case "update-smtp-config":
-          return await handleUpdateSmtpConfig(toolParams);
-        
-        case "delete-smtp-config":
-          return await handleDeleteSmtpConfig(toolParams);
-        
-        case "get-email-templates":
-          return await handleGetEmailTemplates();
-        
-        case "add-email-template":
-          return await handleAddEmailTemplate(toolParams);
-        
-        case "update-email-template":
-          return await handleUpdateEmailTemplate(toolParams);
-        
-        case "delete-email-template":
-          return await handleDeleteEmailTemplate(toolParams);
-        
-        case "get-email-logs": {
-          const { limit, filterBySuccess } = toolParams as { 
-            limit?: number;
-            filterBySuccess?: boolean;
-          };
-          
-          try {
-            let logs = await getEmailLogs();
-            
-            // Filter by success status if specified
-            if (filterBySuccess !== undefined) {
-              logs = logs.filter((log: EmailLogEntry) => log.success === filterBySuccess);
-            }
-            
-            // Sort by timestamp in descending order (newest first)
-            logs = logs.sort((a: EmailLogEntry, b: EmailLogEntry) => 
-              new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-            );
-            
-            // Limit the number of results if specified
-            if (limit && limit > 0) {
-              logs = logs.slice(0, limit);
-            }
-            
-            return {
-              result: logs
-            };
-          } catch (error) {
-            logToFile(`Error getting email logs: ${error}`);
-            throw new Error("Failed to retrieve email logs");
-          }
-        }
-        
-        default:
-          throw new Error(`Tool '${toolName}' exists but no handler is implemented`);
-      }
+      return {
+        content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+      };
     }
   );
+}
+
+async function dispatchTool(
+  tools: Record<string, Tool>,
+  toolName: string,
+  toolParams: any,
+): Promise<unknown> {
+  // Check if the tool exists
+  if (!tools[toolName]) {
+    throw new Error(`Tool '${toolName}' not found`);
+  }
+
+  // Execute the tool based on its name
+  switch (toolName) {
+    case "send-email":
+      return await handleSendEmail(toolParams);
+
+    case "send-bulk-emails":
+      return await handleSendBulkEmails(toolParams);
+
+    case "get-smtp-configs":
+      return await handleGetSmtpConfigs();
+
+    case "add-smtp-config":
+      return await handleAddSmtpConfig(toolParams);
+
+    case "update-smtp-config":
+      return await handleUpdateSmtpConfig(toolParams);
+
+    case "delete-smtp-config":
+      return await handleDeleteSmtpConfig(toolParams);
+
+    case "get-email-templates":
+      return await handleGetEmailTemplates();
+
+    case "add-email-template":
+      return await handleAddEmailTemplate(toolParams);
+
+    case "update-email-template":
+      return await handleUpdateEmailTemplate(toolParams);
+
+    case "delete-email-template":
+      return await handleDeleteEmailTemplate(toolParams);
+
+    case "get-email-logs": {
+      const { limit, filterBySuccess } = toolParams as {
+        limit?: number;
+        filterBySuccess?: boolean;
+      };
+
+      try {
+        let logs = await getEmailLogs();
+
+        // Filter by success status if specified
+        if (filterBySuccess !== undefined) {
+          logs = logs.filter((log: EmailLogEntry) => log.success === filterBySuccess);
+        }
+
+        // Sort by timestamp in descending order (newest first)
+        logs = logs.sort((a: EmailLogEntry, b: EmailLogEntry) =>
+          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+        );
+
+        // Limit the number of results if specified
+        if (limit && limit > 0) {
+          logs = logs.slice(0, limit);
+        }
+
+        return {
+          result: logs
+        };
+      } catch (error) {
+        logToFile(`Error getting email logs: ${error}`);
+        throw new Error("Failed to retrieve email logs");
+      }
+    }
+
+    default:
+      throw new Error(`Tool '${toolName}' exists but no handler is implemented`);
+  }
 }
 
 /**
