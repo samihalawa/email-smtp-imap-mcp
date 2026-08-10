@@ -6,6 +6,7 @@
     "esModuleInterop": true,
     "declaration": true,
     "outDir": "build",
+    "rootDir": "src",
     "strict": true,
     "skipLibCheck": true,
     "resolveJsonModule": true
