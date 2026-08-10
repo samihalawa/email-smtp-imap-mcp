@@ -111,7 +111,7 @@ export function loadAccounts(): EmailAccounts {
 
   // Use DEFAULT_EMAIL_ACCOUNT as the account name, or "default"
   const accountName = process.env.DEFAULT_EMAIL_ACCOUNT || 'default';
-  
+
   return {
     [accountName]: singleAccount
   };
@@ -122,7 +122,7 @@ export function loadAccounts(): EmailAccounts {
  */
 export function getAccount(accountName?: string): { name: string; config: EmailAccount } {
   const accounts = loadAccounts();
-  
+
   // If no account name specified, use the default
   if (!accountName) {
     const defaultAccountName = process.env.DEFAULT_EMAIL_ACCOUNT || Object.keys(accounts)[0];

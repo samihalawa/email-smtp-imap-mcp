@@ -227,7 +227,7 @@ export async function modifyEmails(
   }
 ): Promise<{ success: boolean; modified: number; errors?: string[] }> {
   const client = await createImapConnection(account);
-  
+
   try {
     await client.mailboxOpen('INBOX');
 

@@ -150,7 +150,7 @@ export async function handleEmailRespond(args: any): Promise<string> {
     const responseType = args.response_type || 'reply';
 
     let result;
-    
+
     if (responseType === 'forward') {
       if (!args.to || args.to.length === 0) {
         throw new Error('to is required for forward');

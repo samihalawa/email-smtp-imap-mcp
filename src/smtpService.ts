@@ -67,7 +67,7 @@ export async function sendEmail(
   const fromEmail = resolveFromEmail(account, options.fromEmail);
 
   const mailOptions: any = {
-    from: options.fromName 
+    from: options.fromName
       ? `"${options.fromName}" <${fromEmail}>`
       : fromEmail,
     to: options.to.join(', '),
@@ -125,7 +125,7 @@ export async function replyToEmail(
 ): Promise<{ messageId: string; success: boolean }> {
   // Get the original email
   const originalEmail = await getEmailById(account, emailId, options.includeAttachments);
-  
+
   if (!originalEmail) {
     throw new Error(`Email with ID ${emailId} not found`);
   }
@@ -138,7 +138,7 @@ export async function replyToEmail(
 
   // Determine recipients
   const to: string[] = [extractEmail(originalEmail.reply_to || originalEmail.from)];
-  
+
   if (options.replyAll && originalEmail.to) {
     originalEmail.to.forEach(addr => {
       const email = extractEmail(addr);
@@ -156,12 +156,12 @@ export async function replyToEmail(
 
   // Build reply body
   let replyBody = options.body;
-  
+
   if (options.includeOriginal && originalEmail.body) {
     const originalText = options.bodyType === 'html'
       ? `<br><br>---<br><strong>Original Message:</strong><br>${originalEmail.body}`
       : `\n\n---\nOriginal Message:\n${originalEmail.body}`;
-    
+
     replyBody += originalText;
   }
 
@@ -174,8 +174,8 @@ export async function replyToEmail(
   // Send the reply
   return sendEmail(account, {
     to,
-    subject: originalEmail.subject.startsWith('Re:') 
-      ? originalEmail.subject 
+    subject: originalEmail.subject.startsWith('Re:')
+      ? originalEmail.subject
       : `Re: ${originalEmail.subject}`,
     body: replyBody,
     bodyType: options.bodyType,
@@ -203,19 +203,19 @@ export async function forwardEmail(
 ): Promise<{ messageId: string; success: boolean }> {
   // Get the original email
   const originalEmail = await getEmailById(account, emailId, options.includeAttachments);
-  
+
   if (!originalEmail) {
     throw new Error(`Email with ID ${emailId} not found`);
   }
 
   // Build forward body
   let forwardBody = options.body || '';
-  
+
   if (options.includeOriginal && originalEmail.body) {
     const originalText = options.bodyType === 'html'
       ? `<br><br>---<br><strong>Forwarded Message:</strong><br>${originalEmail.body}`
       : `\n\n---\nForwarded Message:\n${originalEmail.body}`;
-    
+
     forwardBody += originalText;
   }
 
@@ -228,8 +228,8 @@ export async function forwardEmail(
   // Send the forward
   return sendEmail(account, {
     to: options.to,
-    subject: originalEmail.subject.startsWith('Fwd:') 
-      ? originalEmail.subject 
+    subject: originalEmail.subject.startsWith('Fwd:')
+      ? originalEmail.subject
       : `Fwd: ${originalEmail.subject}`,
     body: forwardBody,
     bodyType: options.bodyType,

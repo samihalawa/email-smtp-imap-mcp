@@ -83,23 +83,23 @@ async function runServer() {
           case "emails_find":
             result = await handleEmailsFind(args);
             break;
-          
+
           case "emails_modify":
             result = await handleEmailsModify(args);
             break;
-          
+
           case "email_send":
             result = await handleEmailSend(args);
             break;
-          
+
           case "email_respond":
             result = await handleEmailRespond(args);
             break;
-          
+
           case "folders_list":
             result = await handleFoldersList(args);
             break;
-          
+
           default:
             throw new Error(`Unknown tool: ${name}`);
         }
@@ -118,7 +118,7 @@ async function runServer() {
 
       } catch (error: any) {
         logToFile(`Error handling ${name}: ${error.message}`);
-        
+
         return {
           content: [
             {
