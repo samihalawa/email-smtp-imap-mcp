@@ -53,7 +53,7 @@ async function runServer() {
     const server = new Server(
       {
         name: "email-server",
-        version: "2.1.0"
+        version: "2.1.1"
       },
       {
         capabilities: {

@@ -1,5 +1,15 @@
 # Changelog
 
+## [2.1.1] - 2026-08-11
+
+### Fixed
+- Replaced fragile raw-hosted WebP README artwork with repository-relative, optimized PNG assets.
+- Made the quick-start command install the current tagged source release.
+
+### Changed
+- Updated the CI actions and supported Node.js versions.
+- Added contribution, security, issue, pull request, and dependency-maintenance configuration.
+
 ## [2.1.0] - 2026-08-10
 
 ### Added

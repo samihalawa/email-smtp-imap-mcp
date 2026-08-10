@@ -1,14 +1,14 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/samihalawa/email-smtp-imap-mcp/main/docs/assets/email-mcp-hero.webp" alt="One MCP server connecting multiple email accounts" width="100%" />
+  <img src="./docs/assets/email-mcp-hero.png" alt="One MCP server connecting multiple email accounts" width="100%" />
 </p>
 
 # Email SMTP/IMAP MCP
 
 One local MCP server for every inbox: search, read, send, reply, forward, and organize email across multiple accounts.
 
-[![npm](https://img.shields.io/npm/v/email-smtp-imap-mcp?color=cb3837)](https://www.npmjs.com/package/email-smtp-imap-mcp)
-[![downloads](https://img.shields.io/npm/dm/email-smtp-imap-mcp)](https://www.npmjs.com/package/email-smtp-imap-mcp)
+[![release](https://img.shields.io/github/v/release/samihalawa/email-smtp-imap-mcp)](https://github.com/samihalawa/email-smtp-imap-mcp/releases/latest)
 [![CI](https://github.com/samihalawa/email-smtp-imap-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/samihalawa/email-smtp-imap-mcp/actions/workflows/ci.yml)
+[![Node.js](https://img.shields.io/badge/Node.js-20%2B-339933?logo=nodedotjs&logoColor=white)](https://nodejs.org/)
 [![stars](https://img.shields.io/github/stars/samihalawa/email-smtp-imap-mcp?style=flat)](https://github.com/samihalawa/email-smtp-imap-mcp/stargazers)
 [![license](https://img.shields.io/github/license/samihalawa/email-smtp-imap-mcp)](LICENSE)
 
@@ -21,7 +21,7 @@ One local MCP server for every inbox: search, read, send, reply, forward, and or
 - **Local stdio transport** — no hosted relay and no separate control panel.
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/samihalawa/email-smtp-imap-mcp/main/docs/assets/email-mcp-features.webp" alt="Search, send, respond, organize, and browse folders across accounts" width="100%" />
+  <img src="./docs/assets/email-mcp-features.png" alt="Search, send, respond, organize, and browse folders across accounts" width="100%" />
 </p>
 
 ## Quick start
@@ -36,7 +36,7 @@ Add this to your MCP client configuration. For Claude Desktop, the file is:
   "mcpServers": {
     "email": {
       "command": "npx",
-      "args": ["-y", "email-smtp-imap-mcp"],
+      "args": ["-y", "github:samihalawa/email-smtp-imap-mcp#v2.1.1"],
       "env": {
         "EMAIL_ACCOUNTS_JSON": "{\"work\":{\"smtp\":{\"host\":\"smtp.gmail.com\",\"port\":587,\"user\":\"work@example.com\",\"password\":\"app-password\"},\"imap\":{\"host\":\"imap.gmail.com\",\"port\":993,\"user\":\"work@example.com\",\"password\":\"app-password\"},\"default_from_name\":\"Your Name\",\"sender_emails\":[\"work@example.com\"]},\"personal\":{\"smtp\":{\"host\":\"smtp.mail.me.com\",\"port\":587,\"user\":\"you@icloud.com\",\"password\":\"app-password\"},\"imap\":{\"host\":\"imap.mail.me.com\",\"port\":993,\"user\":\"you@icloud.com\",\"password\":\"app-password\"},\"default_from_name\":\"Your Name\"}}",
         "DEFAULT_EMAIL_ACCOUNT": "work"
@@ -135,7 +135,7 @@ Run the compiled stdio server with `npm start`. Build a production container wit
 
 ## Contributing
 
-Issues and focused pull requests are welcome. Please include a regression test for behavior changes and run `npm test` before opening a PR.
+Issues and focused pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for the development workflow and [SECURITY.md](SECURITY.md) for vulnerability reports.
 
 ## License
 
