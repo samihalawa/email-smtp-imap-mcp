@@ -1,41 +1,28 @@
-# Dependencies
-node_modules/
-npm-debug.log
-yarn-debug.log
-yarn-error.log
-
-# Build outputs
-dist/
-build/
-
-# Environment variables
+# Environment
 .env
 .env.local
-.env.development.local
-.env.test.local
-.env.production.local
 
-# Debug files
-debug_response.json
+# Dependencies
+node_modules/
+
+# Build output
+build/
+dist/
+
+# Logs
 *.log
+logs/
 
-# OS specific files
+# OS files
 .DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
 Thumbs.db
 
-# Editor directories and files
-.idea/
+# IDE
 .vscode/
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
+.idea/
+*.swp
+*.swo
 
-# Backup files
-*.bak
-src/index.ts.bak
+# Test files
+test-*.js
+send-*.js

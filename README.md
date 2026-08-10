@@ -1,242 +1,142 @@
-# SMTP Email MCP Server
+<p align="center">
+  <img src="https://raw.githubusercontent.com/samihalawa/email-smtp-imap-mcp/main/docs/assets/email-mcp-hero.webp" alt="One MCP server connecting multiple email accounts" width="100%" />
+</p>
 
-[![smithery badge](https://smithery.ai/badge/@samihalawa/mcp-server-smtp)](https://smithery.ai/server/@samihalawa/mcp-server-smtp)
+# Email SMTP/IMAP MCP
 
-A Model Context Protocol (MCP) server that provides email sending capabilities for Claude and other MCP-compatible AI assistants.
+One local MCP server for every inbox: search, read, send, reply, forward, and organize email across multiple accounts.
 
-## Features
+[![npm](https://img.shields.io/npm/v/email-smtp-imap-mcp?color=cb3837)](https://www.npmjs.com/package/email-smtp-imap-mcp)
+[![downloads](https://img.shields.io/npm/dm/email-smtp-imap-mcp)](https://www.npmjs.com/package/email-smtp-imap-mcp)
+[![CI](https://github.com/samihalawa/email-smtp-imap-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/samihalawa/email-smtp-imap-mcp/actions/workflows/ci.yml)
+[![stars](https://img.shields.io/github/stars/samihalawa/email-smtp-imap-mcp?style=flat)](https://github.com/samihalawa/email-smtp-imap-mcp/stargazers)
+[![license](https://img.shields.io/github/license/samihalawa/email-smtp-imap-mcp)](LICENSE)
 
-- **Multiple SMTP Configurations**: Configure and manage multiple SMTP servers
-- **Email Templates**: Create, update, and use reusable email templates
-- **Bulk Email Sending**: Send emails to multiple recipients with batching and rate limiting
-- **HTML Support**: Full HTML support for rich email content
-- **Logging**: Comprehensive logging of all email activities
-- **Template Variables**: Dynamic content using template variables
+## Why this server
 
-## Installation
+- **Multi-account by design** — switch between work, personal, support, or client inboxes with `account_name`.
+- **SMTP + IMAP together** — send and receive through one small MCP server.
+- **Complete everyday workflow** — search, read, reply, forward, attach files, flag, archive, move, and list folders.
+- **Provider-agnostic** — works with Gmail, iCloud Mail, Fastmail, Outlook, self-hosted mail, and other standard SMTP/IMAP providers.
+- **Local stdio transport** — no hosted relay and no separate control panel.
 
-### Installing via Smithery
+<p align="center">
+  <img src="https://raw.githubusercontent.com/samihalawa/email-smtp-imap-mcp/main/docs/assets/email-mcp-features.webp" alt="Search, send, respond, organize, and browse folders across accounts" width="100%" />
+</p>
 
-To install SMTP Email Server for Claude Desktop automatically via [Smithery](https://smithery.ai/server/@samihalawa/mcp-server-smtp):
+## Quick start
 
-```bash
-npx -y @smithery/cli install @samihalawa/mcp-server-smtp --client claude
-```
+Add this to your MCP client configuration. For Claude Desktop, the file is:
 
-### Manual Installation
-```bash
-# Clone the repository
-git clone https://github.com/samihalawa/mcp-server-smtp.git
-cd mcp-server-smtp
-
-# Install dependencies
-npm install
-
-# Build the server
-npm run build
-```
-
-
-## Usage
-
-### Starting the Server
-
-```bash
-npm start
-```
-
-### Configuration
-
-Add the server to your MCP configuration:
+- macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- Windows: `%APPDATA%\Claude\claude_desktop_config.json`
 
 ```json
 {
-  "servers": {
-    "smtp-email-server": {
-      "command": "/path/to/node",
-      "args": ["/path/to/mcp-server-smtp/build/index.js"],
-      "enabled": true,
-      "port": 3007,
-      "environment": {
-        "NODE_PATH": "/path/to/node_modules",
-        "PATH": "/usr/local/bin:/usr/bin:/bin"
+  "mcpServers": {
+    "email": {
+      "command": "npx",
+      "args": ["-y", "email-smtp-imap-mcp"],
+      "env": {
+        "EMAIL_ACCOUNTS_JSON": "{\"work\":{\"smtp\":{\"host\":\"smtp.gmail.com\",\"port\":587,\"user\":\"work@example.com\",\"password\":\"app-password\"},\"imap\":{\"host\":\"imap.gmail.com\",\"port\":993,\"user\":\"work@example.com\",\"password\":\"app-password\"},\"default_from_name\":\"Your Name\",\"sender_emails\":[\"work@example.com\"]},\"personal\":{\"smtp\":{\"host\":\"smtp.mail.me.com\",\"port\":587,\"user\":\"you@icloud.com\",\"password\":\"app-password\"},\"imap\":{\"host\":\"imap.mail.me.com\",\"port\":993,\"user\":\"you@icloud.com\",\"password\":\"app-password\"},\"default_from_name\":\"Your Name\"}}",
+        "DEFAULT_EMAIL_ACCOUNT": "work"
       }
     }
   }
 }
 ```
 
-### Available Tools
+Replace the addresses and app passwords, restart your MCP client, and ask it to list your email folders.
 
-#### send-email
+<details>
+<summary>Readable multi-account configuration</summary>
 
-Send an email to one or more recipients.
+The escaped `EMAIL_ACCOUNTS_JSON` value above represents:
 
-Parameters:
-- `to`: Array of recipients with email and optional name
-- `subject`: Email subject
-- `body`: Email body (HTML supported)
-- `from`: (Optional) Sender email and name
-- `cc`: (Optional) CC recipients
-- `bcc`: (Optional) BCC recipients
-- `templateId`: (Optional) ID of a template to use
-- `templateData`: (Optional) Data to populate template variables
-- `smtpConfigId`: (Optional) ID of the SMTP configuration to use
+```json
+{
+  "work": {
+    "smtp": {
+      "host": "smtp.gmail.com",
+      "port": 587,
+      "user": "work@example.com",
+      "password": "app-password"
+    },
+    "imap": {
+      "host": "imap.gmail.com",
+      "port": 993,
+      "user": "work@example.com",
+      "password": "app-password"
+    },
+    "default_from_name": "Your Name",
+    "sender_emails": ["work@example.com", "alias@example.com"]
+  },
+  "personal": {
+    "smtp": {
+      "host": "smtp.mail.me.com",
+      "port": 587,
+      "user": "you@icloud.com",
+      "password": "app-password"
+    },
+    "imap": {
+      "host": "imap.mail.me.com",
+      "port": 993,
+      "user": "you@icloud.com",
+      "password": "app-password"
+    },
+    "default_from_name": "Your Name"
+  }
+}
+```
 
-#### send-bulk-emails
+</details>
 
-Send emails to multiple recipients in batches.
+<details>
+<summary>Single-account environment variables</summary>
 
-Parameters:
-- `recipients`: Array of recipients with email and optional name
-- `subject`: Email subject
-- `body`: Email body (HTML supported)
-- `from`: (Optional) Sender email and name
-- `cc`: (Optional) CC recipients
-- `bcc`: (Optional) BCC recipients
-- `templateId`: (Optional) ID of a template to use
-- `templateData`: (Optional) Data to populate template variables
-- `batchSize`: (Optional) Number of emails to send in each batch
-- `delayBetweenBatches`: (Optional) Delay in milliseconds between batches
-- `smtpConfigId`: (Optional) ID of the SMTP configuration to use
+Use `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS`, `IMAP_HOST`, `IMAP_PORT`, `IMAP_SECURE`, `IMAP_USER`, and `IMAP_PASS` instead of `EMAIL_ACCOUNTS_JSON`.
 
-#### get-smtp-configs
+`SMTP_USERNAME`/`SMTP_PASSWORD` and `IMAP_USERNAME`/`IMAP_PASSWORD` are accepted aliases. IMAP credentials default to the SMTP credentials when omitted. Use `SENDER_EMAILS` as a comma-separated allowlist for optional `from_email` selection.
 
-Get all configured SMTP servers.
+</details>
 
-Parameters: None
+## Tools
 
-#### add-smtp-config
+| Tool | What it does |
+| --- | --- |
+| `emails_find` | Search by text, sender, recipient, subject, date, read state, flag state, or attachments. Optionally return bodies and attachments. |
+| `email_send` | Send plain-text or HTML email with CC, BCC, sender aliases, and base64 attachments. |
+| `email_respond` | Reply, reply-all, or forward by email UID with threading and optional original attachments. |
+| `emails_modify` | Mark read/unread, flag/unflag, or move messages to another folder. |
+| `folders_list` | List folders with optional total and unread counts. |
 
-Add a new SMTP server configuration.
+Every tool accepts an optional `account_name`. Without it, the server uses `DEFAULT_EMAIL_ACCOUNT` or the first configured account.
 
-Parameters:
-- `name`: Name for the configuration
-- `host`: SMTP server hostname
-- `port`: SMTP server port
-- `secure`: Whether to use SSL/TLS
-- `auth`: Authentication credentials (user and pass)
-- `isDefault`: (Optional) Whether this is the default configuration
+## Provider settings
 
-#### update-smtp-config
+| Provider | SMTP | IMAP | Credential |
+| --- | --- | --- | --- |
+| Gmail | `smtp.gmail.com:587` | `imap.gmail.com:993` | [App password](https://support.google.com/accounts/answer/185833) |
+| iCloud Mail | `smtp.mail.me.com:587` | `imap.mail.me.com:993` | [App-specific password](https://support.apple.com/en-us/102654) |
+| Other providers | Use the provider's SMTP host | Use the provider's IMAP host | Provider password or app password |
 
-Update an existing SMTP server configuration.
+Use `secure: true` for implicit TLS ports such as 465/993. Port 587 normally uses `secure: false` and upgrades with STARTTLS.
 
-Parameters:
-- `id`: ID of the configuration to update
-- `name`: Name for the configuration
-- `host`: SMTP server hostname
-- `port`: SMTP server port
-- `secure`: Whether to use SSL/TLS
-- `auth`: Authentication credentials (user and pass)
-- `isDefault`: (Optional) Whether this is the default configuration
+## Development
 
-#### delete-smtp-config
+```bash
+git clone https://github.com/samihalawa/email-smtp-imap-mcp.git
+cd email-smtp-imap-mcp
+npm ci
+npm test
+```
 
-Delete an SMTP server configuration.
+Run the compiled stdio server with `npm start`. Build a production container with `docker build -t email-smtp-imap-mcp .`.
 
-Parameters:
-- `id`: ID of the configuration to delete
+## Contributing
 
-#### get-email-templates
-
-Get all email templates.
-
-Parameters: None
-
-#### add-email-template
-
-Add a new email template.
-
-Parameters:
-- `name`: Template name
-- `subject`: Email subject template
-- `body`: Email body template (HTML supported)
-- `isDefault`: (Optional) Whether this is the default template
-
-#### update-email-template
-
-Update an existing email template.
-
-Parameters:
-- `id`: ID of the template to update
-- `name`: Template name
-- `subject`: Email subject template
-- `body`: Email body template (HTML supported)
-- `isDefault`: (Optional) Whether this is the default template
-
-#### delete-email-template
-
-Delete an email template.
-
-Parameters:
-- `id`: ID of the template to delete
-
-#### get-email-logs
-
-Get logs of sent emails.
-
-Parameters: None
-
-## Example Usage
-
-1. Configure an SMTP server:
-   ```
-   add-smtp-config(
-     name: "Gmail",
-     host: "smtp.gmail.com",
-     port: 587,
-     secure: false,
-     auth: {
-       user: "your-email@gmail.com",
-       pass: "your-app-password"
-     },
-     isDefault: true
-   )
-   ```
-
-2. Create an email template:
-   ```
-   add-email-template(
-     name: "Welcome Email",
-     subject: "Welcome to {{company}}!",
-     body: "<h1>Hello {{name}},</h1><p>Welcome to {{company}}!</p>",
-     isDefault: false
-   )
-   ```
-
-3. Send an email using a template:
-   ```
-   send-email(
-     to: [{ email: "recipient@example.com", name: "John Doe" }],
-     templateId: "welcome-email",
-     templateData: {
-       name: "John",
-       company: "ACME Corp"
-     }
-   )
-   ```
-
-4. Send bulk emails:
-   ```
-   send-bulk-emails(
-     recipients: [
-       { email: "user1@example.com", name: "User 1" },
-       { email: "user2@example.com", name: "User 2" }
-     ],
-     subject: "Important Announcement",
-     body: "<p>This is an important announcement.</p>",
-     batchSize: 10,
-     delayBetweenBatches: 1000
-   )
-   ```
-
-## Requirements
-
-- Node.js 14+
-- Nodemailer for email sending
-- Access to an SMTP server
+Issues and focused pull requests are welcome. Please include a regression test for behavior changes and run `npm test` before opening a PR.
 
 ## License
 
-MIT 
+[MIT](LICENSE) © Sami Halawa

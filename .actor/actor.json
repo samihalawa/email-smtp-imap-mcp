@@ -1,0 +1,8 @@
+{
+    "actorSpecification": 1,
+    "name": "email-smtp-imap-mcp",
+    "title": "Email SMTP/IMAP MCP Server",
+    "description": "MCP server for email operations via SMTP/IMAP",
+    "version": "0.1",
+    "dockerfile": "./Dockerfile"
+}
