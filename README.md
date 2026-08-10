@@ -7,6 +7,8 @@
 One local MCP server for every inbox: search, read, send, reply, forward, and organize email across multiple accounts.
 
 [![release](https://img.shields.io/github/v/release/samihalawa/email-smtp-imap-mcp)](https://github.com/samihalawa/email-smtp-imap-mcp/releases/latest)
+[![npm](https://img.shields.io/npm/v/email-smtp-imap-mcp?color=cb3837)](https://www.npmjs.com/package/email-smtp-imap-mcp)
+[![downloads](https://img.shields.io/npm/dm/email-smtp-imap-mcp)](https://www.npmjs.com/package/email-smtp-imap-mcp)
 [![CI](https://github.com/samihalawa/email-smtp-imap-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/samihalawa/email-smtp-imap-mcp/actions/workflows/ci.yml)
 [![Node.js](https://img.shields.io/badge/Node.js-20%2B-339933?logo=nodedotjs&logoColor=white)](https://nodejs.org/)
 [![stars](https://img.shields.io/github/stars/samihalawa/email-smtp-imap-mcp?style=flat)](https://github.com/samihalawa/email-smtp-imap-mcp/stargazers)
@@ -36,7 +38,7 @@ Add this to your MCP client configuration. For Claude Desktop, the file is:
   "mcpServers": {
     "email": {
       "command": "npx",
-      "args": ["-y", "github:samihalawa/email-smtp-imap-mcp#v2.1.1"],
+      "args": ["-y", "email-smtp-imap-mcp"],
       "env": {
         "EMAIL_ACCOUNTS_JSON": "{\"work\":{\"smtp\":{\"host\":\"smtp.gmail.com\",\"port\":587,\"user\":\"work@example.com\",\"password\":\"app-password\"},\"imap\":{\"host\":\"imap.gmail.com\",\"port\":993,\"user\":\"work@example.com\",\"password\":\"app-password\"},\"default_from_name\":\"Your Name\",\"sender_emails\":[\"work@example.com\"]},\"personal\":{\"smtp\":{\"host\":\"smtp.mail.me.com\",\"port\":587,\"user\":\"you@icloud.com\",\"password\":\"app-password\"},\"imap\":{\"host\":\"imap.mail.me.com\",\"port\":993,\"user\":\"you@icloud.com\",\"password\":\"app-password\"},\"default_from_name\":\"Your Name\"}}",
         "DEFAULT_EMAIL_ACCOUNT": "work"

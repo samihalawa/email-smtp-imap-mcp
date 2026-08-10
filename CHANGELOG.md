@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.1.2] - 2026-08-11
+
+### Changed
+- Published the maintained multi-account server to npm with the simple `npx -y email-smtp-imap-mcp` install path.
+- Restored npm version and download badges now that the registry release matches the repository.
+
 ## [2.1.1] - 2026-08-11
 
 ### Fixed

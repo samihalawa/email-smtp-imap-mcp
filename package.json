@@ -1,6 +1,6 @@
 {
   "name": "email-smtp-imap-mcp",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "description": "Multi-account email MCP server for SMTP sending, IMAP search, replies, attachments, and inbox organization",
   "main": "build/index.js",
   "types": "build/index.d.ts",
