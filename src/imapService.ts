@@ -364,7 +364,7 @@ export async function getEmailById(
 
   const client = await createImapConnection(account);
   try {
-    return fetchEmailByIdFromClient(client, emailId, includeAttachments);
+    return await fetchEmailByIdFromClient(client, emailId, includeAttachments);
   } finally {
     await client.logout();
   }

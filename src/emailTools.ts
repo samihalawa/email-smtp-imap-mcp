@@ -5,6 +5,15 @@
 import { Tool } from "@modelcontextprotocol/sdk/types.js";
 
 export const EMAIL_TOOLS: Record<string, Tool> = {
+  "accounts_list": {
+    name: "accounts_list",
+    description: "List every configured email account and show which account is the default. Use this before other tools when multiple SMTP/IMAP accounts are configured.",
+    inputSchema: {
+      type: "object",
+      properties: {}
+    }
+  },
+
   /**
    * Search for emails and optionally get their full content
    */

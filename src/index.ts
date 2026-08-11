@@ -5,7 +5,6 @@
  * Supports both SMTP (sending) and IMAP (reading) operations
  */
 
-// import 'dotenv/config'; // Removed as env vars are passed directly
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
@@ -14,12 +13,14 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 import { EMAIL_TOOLS } from "./emailTools.js";
 import {
+  handleAccountsList,
   handleEmailsFind,
   handleEmailsModify,
   handleEmailSend,
   handleEmailRespond,
   handleFoldersList
 } from "./emailHandlers.js";
+import { loadEnvironment } from './environment.js';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
@@ -49,11 +50,13 @@ function logToFile(message: string): void {
  */
 async function runServer() {
   try {
+    loadEnvironment();
+
     // Initialize the server
     const server = new Server(
       {
-        name: "email-server",
-        version: "2.1.2"
+        name: "email-smtp-imap-mcp",
+        version: "2.2.0"
       },
       {
         capabilities: {
@@ -80,6 +83,10 @@ async function runServer() {
         let result: string;
 
         switch (name) {
+          case "accounts_list":
+            result = await handleAccountsList();
+            break;
+
           case "emails_find":
             result = await handleEmailsFind(args);
             break;

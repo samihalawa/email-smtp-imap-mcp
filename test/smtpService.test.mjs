@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { resolveFromEmail } from '../build/smtpService.js';
+import { buildReplyRecipients, resolveFromEmail } from '../build/smtpService.js';
 
 const account = {
   smtp_host: 'smtp.example.test',
@@ -27,4 +27,29 @@ test('allows configured aliases and rejects unknown sender addresses', () => {
     () => resolveFromEmail(account, 'unknown@example.test'),
     /is not allowed for this account/
   );
+});
+
+test('builds reply-all recipients without adding the account or its aliases', () => {
+  const recipients = buildReplyRecipients(account, {
+    from: 'Sender <sender@outside.test>',
+    reply_to: 'Replies <reply@outside.test>',
+    to: ['Alias <alias@example.test>', 'Colleague <colleague@outside.test>'],
+    cc: ['Login <relay-login@example.test>', 'COLLEAGUE@outside.test', 'Other <other@outside.test>']
+  }, true);
+
+  assert.deepEqual(recipients, [
+    'reply@outside.test',
+    'colleague@outside.test',
+    'other@outside.test'
+  ]);
+});
+
+test('uses explicit reply recipients as the documented override', () => {
+  const recipients = buildReplyRecipients(account, {
+    from: 'sender@outside.test',
+    to: [],
+    cc: []
+  }, true, ['override@example.test']);
+
+  assert.deepEqual(recipients, ['override@example.test']);
 });

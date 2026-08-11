@@ -16,7 +16,7 @@ One local MCP server for every inbox: search, read, send, reply, forward, and or
 
 ## Why this server
 
-- **Multi-account by design** — switch between work, personal, support, or client inboxes with `account_name`.
+- **No account-count cap** — add work, personal, support, or client inboxes and switch with `account_name`.
 - **SMTP + IMAP together** — send and receive through one small MCP server.
 - **Complete everyday workflow** — search, read, reply, forward, attach files, flag, archive, move, and list folders.
 - **Provider-agnostic** — works with Gmail, iCloud Mail, Fastmail, Outlook, self-hosted mail, and other standard SMTP/IMAP providers.
@@ -28,7 +28,56 @@ One local MCP server for every inbox: search, read, send, reply, forward, and or
 
 ## Quick start
 
-Add this to your MCP client configuration. For Claude Desktop, the file is:
+### 1. Create your `.env`
+
+Copy [.env.example](.env.example) to a private location and add as many named accounts as you need:
+
+```dotenv
+EMAIL_ACCOUNTS_JSON='{
+  "work": {
+    "smtp": {
+      "host": "smtp.gmail.com",
+      "port": 587,
+      "secure": false,
+      "user": "work@example.com",
+      "password": "app-password"
+    },
+    "imap": {
+      "host": "imap.gmail.com",
+      "port": 993,
+      "secure": true,
+      "user": "work@example.com",
+      "password": "app-password"
+    },
+    "default_from_name": "Your Name",
+    "sender_emails": ["work@example.com", "alias@example.com"]
+  },
+  "personal": {
+    "smtp": {
+      "host": "smtp.mail.me.com",
+      "port": 587,
+      "secure": false,
+      "user": "you@icloud.com",
+      "password": "app-password"
+    },
+    "imap": {
+      "host": "imap.mail.me.com",
+      "port": 993,
+      "secure": true,
+      "user": "you@icloud.com",
+      "password": "app-password"
+    }
+  }
+}'
+
+DEFAULT_EMAIL_ACCOUNT="work"
+```
+
+The server loads `.env` from its working directory automatically. `EMAIL_ENV_FILE` lets an MCP client use an `.env` stored anywhere.
+
+### 2. Add the MCP server
+
+For Claude Desktop, edit:
 
 - macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
 - Windows: `%APPDATA%\Claude\claude_desktop_config.json`
@@ -40,53 +89,25 @@ Add this to your MCP client configuration. For Claude Desktop, the file is:
       "command": "npx",
       "args": ["-y", "email-smtp-imap-mcp"],
       "env": {
-        "EMAIL_ACCOUNTS_JSON": "{\"work\":{\"smtp\":{\"host\":\"smtp.gmail.com\",\"port\":587,\"user\":\"work@example.com\",\"password\":\"app-password\"},\"imap\":{\"host\":\"imap.gmail.com\",\"port\":993,\"user\":\"work@example.com\",\"password\":\"app-password\"},\"default_from_name\":\"Your Name\",\"sender_emails\":[\"work@example.com\"]},\"personal\":{\"smtp\":{\"host\":\"smtp.mail.me.com\",\"port\":587,\"user\":\"you@icloud.com\",\"password\":\"app-password\"},\"imap\":{\"host\":\"imap.mail.me.com\",\"port\":993,\"user\":\"you@icloud.com\",\"password\":\"app-password\"},\"default_from_name\":\"Your Name\"}}",
-        "DEFAULT_EMAIL_ACCOUNT": "work"
+        "EMAIL_ENV_FILE": "/absolute/path/to/your/.env"
       }
     }
   }
 }
 ```
 
-Replace the addresses and app passwords, restart your MCP client, and ask it to list your email folders.
+Use an absolute path, restart your MCP client, then ask: **“List my configured email accounts.”**
 
 <details>
-<summary>Readable multi-account configuration</summary>
+<summary>Pass account JSON directly from the MCP client</summary>
 
-The escaped `EMAIL_ACCOUNTS_JSON` value above represents:
+You can skip the `.env` file and set `EMAIL_ACCOUNTS_JSON` plus `DEFAULT_EMAIL_ACCOUNT` directly in the MCP client’s `env` object. The JSON must be escaped into a single string.
 
 ```json
 {
-  "work": {
-    "smtp": {
-      "host": "smtp.gmail.com",
-      "port": 587,
-      "user": "work@example.com",
-      "password": "app-password"
-    },
-    "imap": {
-      "host": "imap.gmail.com",
-      "port": 993,
-      "user": "work@example.com",
-      "password": "app-password"
-    },
-    "default_from_name": "Your Name",
-    "sender_emails": ["work@example.com", "alias@example.com"]
-  },
-  "personal": {
-    "smtp": {
-      "host": "smtp.mail.me.com",
-      "port": 587,
-      "user": "you@icloud.com",
-      "password": "app-password"
-    },
-    "imap": {
-      "host": "imap.mail.me.com",
-      "port": 993,
-      "user": "you@icloud.com",
-      "password": "app-password"
-    },
-    "default_from_name": "Your Name"
+  "env": {
+    "EMAIL_ACCOUNTS_JSON": "{\"work\":{\"smtp\":{\"host\":\"smtp.gmail.com\",\"port\":587,\"user\":\"work@example.com\",\"password\":\"app-password\"},\"imap\":{\"host\":\"imap.gmail.com\",\"port\":993,\"user\":\"work@example.com\",\"password\":\"app-password\"}}}",
+    "DEFAULT_EMAIL_ACCOUNT": "work"
   }
 }
 ```
@@ -94,7 +115,7 @@ The escaped `EMAIL_ACCOUNTS_JSON` value above represents:
 </details>
 
 <details>
-<summary>Single-account environment variables</summary>
+<summary>Single-account `.env` variables</summary>
 
 Use `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS`, `IMAP_HOST`, `IMAP_PORT`, `IMAP_SECURE`, `IMAP_USER`, and `IMAP_PASS` instead of `EMAIL_ACCOUNTS_JSON`.
 
@@ -106,13 +127,23 @@ Use `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS`, `IMAP_HOS
 
 | Tool | What it does |
 | --- | --- |
+| `accounts_list` | List every configured account and identify the default without exposing credentials. |
 | `emails_find` | Search by text, sender, recipient, subject, date, read state, flag state, or attachments. Optionally return bodies and attachments. |
 | `email_send` | Send plain-text or HTML email with CC, BCC, sender aliases, and base64 attachments. |
 | `email_respond` | Reply, reply-all, or forward by email UID with threading and optional original attachments. |
 | `emails_modify` | Mark read/unread, flag/unflag, or move messages to another folder. |
 | `folders_list` | List folders with optional total and unread counts. |
 
-Every tool accepts an optional `account_name`. Without it, the server uses `DEFAULT_EMAIL_ACCOUNT` or the first configured account.
+Every email tool accepts an optional `account_name`. Without it, the server uses `DEFAULT_EMAIL_ACCOUNT` or the first configured account. There is no application-level account-count limit.
+
+## Verify your setup
+
+After restarting the MCP client, try these in order:
+
+1. “List my configured email accounts.”
+2. “List folders for my `work` account.”
+3. “Find the five newest unread emails in my `personal` account.”
+4. “Send a plain-text email from my `work` account.”
 
 ## Provider settings
 

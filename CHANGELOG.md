@@ -1,5 +1,22 @@
 # Changelog
 
+## [2.2.0] - 2026-08-11
+
+### Added
+- Load multiline multi-account configuration automatically from `.env` or an explicit `EMAIL_ENV_FILE` path.
+- Added `accounts_list` for discovering every configured account and the default account.
+- Added protocol-level MCP tests using local SMTP and IMAP servers.
+
+### Fixed
+- Validate every account, port, secure flag, default account, and tool input before connecting.
+- Apply the documented recipient override for replies and exclude the account's aliases from reply-all recipients.
+- Keep the IMAP connection open until the original message is fetched for replies and forwards.
+- Copy attachment arrays before adding original-message attachments.
+
+### Changed
+- Simplified the README to lead with a readable `.env` workflow and a small MCP client configuration.
+- Updated the MCP server identity to `email-smtp-imap-mcp`.
+
 ## [2.1.2] - 2026-08-11
 
 ### Changed

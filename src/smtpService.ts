@@ -3,7 +3,7 @@
  */
 
 import nodemailer from 'nodemailer';
-import { EmailAccount, EmailAttachment } from './types.js';
+import { EmailAccount, EmailAttachment, EmailMessage } from './types.js';
 import { getEmailById } from './imapService.js';
 
 /**
@@ -41,6 +41,41 @@ export function resolveFromEmail(account: EmailAccount, requestedEmail?: string)
   }
 
   return requestedEmail || account.sender_emails?.[0] || account.smtp_user;
+}
+
+function extractEmailAddress(value: string): string {
+  const match = value.match(/<([^>]+)>/);
+  return (match ? match[1] : value).trim();
+}
+
+export function buildReplyRecipients(
+  account: EmailAccount,
+  originalEmail: Pick<EmailMessage, 'from' | 'reply_to' | 'to' | 'cc'>,
+  replyAll: boolean,
+  overrideRecipients?: string[]
+): string[] {
+  if (overrideRecipients?.length) return [...new Set(overrideRecipients)];
+
+  const primaryRecipient = extractEmailAddress(originalEmail.reply_to || originalEmail.from);
+  const recipients = [primaryRecipient];
+
+  if (replyAll) {
+    const ownAddresses = new Set(
+      [account.smtp_user, ...(account.sender_emails || [])].map((email) => email.toLowerCase())
+    );
+    const seen = new Set([primaryRecipient.toLowerCase()]);
+
+    for (const value of [...(originalEmail.to || []), ...(originalEmail.cc || [])]) {
+      const email = extractEmailAddress(value);
+      const normalized = email.toLowerCase();
+      if (!ownAddresses.has(normalized) && !seen.has(normalized)) {
+        recipients.push(email);
+        seen.add(normalized);
+      }
+    }
+  }
+
+  return recipients;
 }
 
 /**
@@ -117,6 +152,7 @@ export async function replyToEmail(
   options: {
     body: string;
     bodyType?: 'plain' | 'html';
+    to?: string[];
     replyAll?: boolean;
     includeOriginal?: boolean;
     includeAttachments?: boolean;
@@ -130,29 +166,7 @@ export async function replyToEmail(
     throw new Error(`Email with ID ${emailId} not found`);
   }
 
-  // Extract recipient email from "Name <email>" format
-  const extractEmail = (str: string): string => {
-    const match = str.match(/<(.+?)>/);
-    return match ? match[1] : str.trim();
-  };
-
-  // Determine recipients
-  const to: string[] = [extractEmail(originalEmail.reply_to || originalEmail.from)];
-
-  if (options.replyAll && originalEmail.to) {
-    originalEmail.to.forEach(addr => {
-      const email = extractEmail(addr);
-      if (email !== account.smtp_user && !to.includes(email)) {
-        to.push(email);
-      }
-    });
-    originalEmail.cc?.forEach(addr => {
-      const email = extractEmail(addr);
-      if (email !== account.smtp_user && !to.includes(email)) {
-        to.push(email);
-      }
-    });
-  }
+  const to = buildReplyRecipients(account, originalEmail, options.replyAll || false, options.to);
 
   // Build reply body
   let replyBody = options.body;
@@ -166,7 +180,7 @@ export async function replyToEmail(
   }
 
   // Prepare attachments
-  const attachments = options.additionalAttachments || [];
+  const attachments = [...(options.additionalAttachments || [])];
   if (options.includeAttachments && originalEmail.attachments) {
     attachments.push(...originalEmail.attachments);
   }
@@ -220,7 +234,7 @@ export async function forwardEmail(
   }
 
   // Prepare attachments
-  const attachments = options.additionalAttachments || [];
+  const attachments = [...(options.additionalAttachments || [])];
   if (options.includeAttachments && originalEmail.attachments) {
     attachments.push(...originalEmail.attachments);
   }
