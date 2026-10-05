@@ -1,0 +1,86 @@
+{
+  "version": "v1.1.0",
+  "entity": {
+    "type": "individual",
+    "role": "maintainer",
+    "name": "Sami Halawa Ribas",
+    "email": "sami@samihalawa.com",
+    "phone": "+34679794037",
+    "description": "Independent AI engineer based in Madrid, Spain. I build and maintain open-source Model Context Protocol (MCP) servers that give AI agents real capabilities, such as email and browser-based visual testing.",
+    "webpageUrl": {
+      "url": "https://github.com/samihalawa"
+    }
+  },
+  "projects": [
+    {
+      "guid": "email-smtp-imap-mcp",
+      "name": "email-smtp-imap-mcp",
+      "description": "Multi-account email server for AI agents over the Model Context Protocol: SMTP sending, IMAP search, replies, attachments and inbox organisation, usable from any MCP client. Published on npm (about 3,200 downloads in the last 12 months), MIT licence.",
+      "webpageUrl": {
+        "url": "https://github.com/samihalawa/email-smtp-imap-mcp"
+      },
+      "repositoryUrl": {
+        "url": "https://github.com/samihalawa/email-smtp-imap-mcp"
+      },
+      "licenses": [
+        "spdx:MIT"
+      ],
+      "tags": [
+        "artificial-intelligence",
+        "communication",
+        "api",
+        "developer-tools",
+        "security",
+        "mcp",
+        "email",
+        "ai-agents"
+      ]
+    },
+    {
+      "guid": "visual-ui-debug-agent-mcp",
+      "name": "VUDA: Visual UI Debug Agent MCP",
+      "description": "Model Context Protocol server that gives AI agents a real browser for testing and debugging web interfaces with Playwright: screenshots, DOM and style inspection, multi-step workflow validation, console capture, API checks and visual diffs. 29 MCP tools; runs locally or against any CDP browser. Published on npm, ISC licence.",
+      "webpageUrl": {
+        "url": "https://github.com/samihalawa/visual-ui-debug-agent-mcp"
+      },
+      "repositoryUrl": {
+        "url": "https://github.com/samihalawa/visual-ui-debug-agent-mcp"
+      },
+      "licenses": [
+        "spdx:ISC"
+      ],
+      "tags": [
+        "artificial-intelligence",
+        "developer-tools",
+        "software-engineering",
+        "web-development",
+        "mcp",
+        "playwright",
+        "ai-agents"
+      ]
+    }
+  ],
+  "funding": {
+    "channels": [
+      {
+        "guid": "bank-transfer",
+        "type": "bank",
+        "description": "International bank transfer (SEPA or SWIFT) to the maintainer's bank account in Spain. Account details are provided on request."
+      }
+    ],
+    "plans": [
+      {
+        "guid": "maintenance",
+        "status": "active",
+        "name": "Ongoing maintenance",
+        "description": "Funds maintainer time to keep both MCP servers working as the MCP specification, SDKs and client applications change: compatibility updates, bug fixes, reviewing issues and contributions, documentation, tests in CI and regular releases on npm.",
+        "amount": 10000,
+        "currency": "USD",
+        "frequency": "yearly",
+        "channels": [
+          "bank-transfer"
+        ]
+      }
+    ]
+  }
+}
