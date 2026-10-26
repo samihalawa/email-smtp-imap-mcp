@@ -99,7 +99,12 @@ function createImapTestServer() {
           writeMessage(2, 42, 'Newest test email', 'newest');
           socket.write(`${tag} OK FETCH completed\r\n`);
         } else if (command === 'UID' && /\sFETCH\s/i.test(line)) {
-          writeMessage(2, 42, 'Newest test email', 'newest');
+          const requested = line.match(/\sFETCH\s+(\S+)/i)[1].split(',').flatMap((part) => {
+            const [from, to = from] = part.split(':').map(Number);
+            return [41, 42].filter((uid) => uid >= from && uid <= to);
+          });
+          if (requested.includes(41)) writeMessage(1, 41, 'First test email', 'first');
+          if (requested.includes(42)) writeMessage(2, 42, 'Newest test email', 'newest');
           socket.write(`${tag} OK UID FETCH completed\r\n`);
         } else if (command === 'UID' && /\sSTORE\s/i.test(line)) {
           socket.write('* 2 FETCH (UID 42 FLAGS (\\Seen))\r\n');
@@ -143,7 +148,7 @@ test('serves all tools over stdio and marks failed calls as errors', async () =>
     const listed = await client.listTools();
     assert.deepEqual(
       listed.tools.map((tool) => tool.name).sort(),
-      ['accounts_list', 'email_respond', 'email_send', 'emails_find', 'emails_modify', 'folders_list']
+      ['accounts_list', 'attachment_get', 'draft_create', 'draft_delete', 'draft_send', 'draft_update', 'email_respond', 'email_send', 'emails_find', 'emails_modify', 'emails_wait', 'folder_create', 'folder_delete', 'folder_empty', 'folder_rename', 'folders_list']
     );
 
     const result = await client.callTool({

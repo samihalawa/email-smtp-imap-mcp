@@ -1,0 +1,13 @@
+services:
+  dovecot:
+    build: .
+    ports:
+      - "127.0.0.1:${TEST_IMAP_PORT:-11143}:143"
+    volumes:
+      - ./dovecot.conf:/etc/dovecot/dovecot.conf:ro
+      - ./users:/etc/dovecot/users:ro
+    healthcheck:
+      test: ["CMD", "doveadm", "user", "alice@example.test"]
+      interval: 1s
+      timeout: 3s
+      retries: 30

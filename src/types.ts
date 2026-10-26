@@ -15,6 +15,11 @@ export interface EmailAccount {
   imap_secure: boolean;
   default_from_name?: string;
   sender_emails?: string[];
+  save_to_sent?: boolean;
+  sent_folder?: string;
+  read_only?: boolean;
+  allow_delete?: boolean;
+  allow_permanent_delete?: boolean;
 }
 
 export interface EmailAccounts {
@@ -28,6 +33,15 @@ export interface EmailFilters {
   has_attachments?: boolean;
   is_unread?: boolean;
   is_flagged?: boolean;
+  is_answered?: boolean;
+  is_forwarded?: boolean;
+  is_draft?: boolean;
+  keyword?: string;
+  no_keyword?: string;
+  cc?: string;
+  bcc?: string;
+  min_size?: number;
+  max_size?: number;
   after_date?: string;
   before_date?: string;
 }
@@ -36,6 +50,13 @@ export interface EmailAttachment {
   filename: string;
   content: string; // Base64 encoded
   content_type?: string;
+}
+
+export interface AttachmentInfo {
+  part: string;
+  filename: string;
+  content_type: string;
+  size: number;
 }
 
 export interface EmailMessage {
@@ -54,11 +75,18 @@ export interface EmailMessage {
   is_flagged: boolean;
   has_attachments: boolean;
   attachments?: EmailAttachment[];
+  attachment_list?: AttachmentInfo[];
+  keywords?: string[];
 }
 
 export interface EmailFolder {
   name: string;
   path: string;
+  delimiter?: string;
+  parent?: string;
+  special_use?: string;
+  subscribed?: boolean;
+  selectable?: boolean;
   unread_count?: number;
   total_count?: number;
 }

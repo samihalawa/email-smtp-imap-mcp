@@ -43,3 +43,18 @@ test('fetches the requested email as an exact IMAP UID', async () => {
   assert.equal(calls[1][1], '42');
   assert.deepEqual(calls[1][3], { uid: true });
 });
+
+test('picks a parsed attachment by unique name, else by position', async () => {
+  const { pickParsedAttachment, describeError } = await import('../build/imapService.js');
+  const parsed = [
+    { filename: 'a.txt', content: Buffer.from('a') },
+    { filename: 'dup.txt', content: Buffer.from('1') },
+    { filename: 'dup.txt', content: Buffer.from('2') }
+  ];
+  assert.equal(pickParsedAttachment(parsed, { part: '1', filename: 'a.txt', content_type: 'text/plain', size: 1 }, 0).content.toString(), 'a');
+  assert.equal(pickParsedAttachment(parsed, { part: '3', filename: 'dup.txt', content_type: 'text/plain', size: 1 }, 2).content.toString(), '2');
+  assert.equal(pickParsedAttachment(parsed, { part: '9', filename: 'gone.txt', content_type: 'text/plain', size: 1 }, 7), undefined);
+
+  assert.equal(describeError({ message: 'Command failed', serverResponseCode: 'NONEXISTENT', responseText: 'Mailbox missing' }), 'Command failed: NONEXISTENT Mailbox missing');
+  assert.equal(describeError(new Error('plain')), 'plain');
+});

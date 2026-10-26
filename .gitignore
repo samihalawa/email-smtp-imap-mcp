@@ -26,3 +26,6 @@ Thumbs.db
 # Test files
 test-*.js
 send-*.js
+
+# Live test credentials
+.env.live

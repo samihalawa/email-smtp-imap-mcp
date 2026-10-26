@@ -1,5 +1,29 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+- `emails_wait` waits for new mail (IMAP IDLE) and returns it, so a reply can be awaited without repeated searches.
+- IMAP connections are reused for 30 seconds (`IMAP_KEEPALIVE_SECONDS`, `0` disables), which makes multi-step workflows much faster and avoids provider login limits.
+- `email_send`, `draft_create` and `draft_update` accept `reply_to`, `priority`, `read_receipt` and custom `headers`; drafts keep them across updates and `draft_send`.
+- Custom keywords: `emails_modify` can `add_keywords`/`remove_keywords`, `emails_find` filters with `keyword`/`no_keyword` and lists `keywords`.
+- `emails_find` pages with `offset` and `order` and reports `total_found`, `has_more` and `next_offset`; new filters `is_answered`, `is_forwarded`, `is_draft`, `cc`, `bcc`, `min_size` and `max_size`.
+- `emails_modify` can act on search results (`filters`/`query`) with a `dry_run` and a required `expected_count`, and can report mail as spam (`mark_spam`/`mark_not_spam`).
+- `folder_empty` clears the Trash or Junk folder.
+- `folder_rename` renames or moves folders; `emails_modify` can copy messages with `copy_to_folder`; `folders_list` reports parent, separator and special-use type.
+
+### Fixed
+- Sent, Drafts and Trash are also found by common German and English names when the server sets no special-use flags.
+- Moving, copying or deleting to a folder the server refuses (for example one that does not exist) is now reported as an error instead of counted as modified.
+- `attachment_get` downloads a single attachment; `emails_find` results list attachments in `attachment_list` without downloading them.
+- `draft_update`, `draft_send` and `draft_delete` complete the draft workflow; `draft_create` can answer an existing message with `reply_to_email_id`.
+- `email_respond` accepts a `folder` and flags the original `\Answered` (reply) or `$Forwarded` (forward); the result reports `original_flagged`.
+- Per-account safety switches `READ_ONLY`, `ALLOW_DELETE` and `ALLOW_PERMANENT_DELETE`; `accounts_list` reports them.
+- `draft_create` saves drafts to the IMAP Drafts folder without sending.
+- `folder_create` and `folder_delete` manage folders (INBOX and special-use folders are protected).
+- `emails_modify` can delete messages (to Trash, or permanently with `permanent: true`) and accepts a source `folder`.
+- `emails_find` accepts a `folder`, so messages outside INBOX can be found, moved, or deleted.
+
 ## [2.2.0] - 2026-08-11
 
 ### Added
