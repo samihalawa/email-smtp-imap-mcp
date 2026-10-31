@@ -27,5 +27,8 @@ Thumbs.db
 test-*.js
 send-*.js
 
+# Live test credentials
+.env.live
+
 # Generated release assets, archived by the release workflow
 release-artifacts/

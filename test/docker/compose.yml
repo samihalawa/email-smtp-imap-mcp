@@ -1,0 +1,16 @@
+services:
+  dovecot:
+    build: .
+    ports:
+      - "127.0.0.1:${TEST_IMAP_PORT:-11143}:143"
+    volumes:
+      - ./dovecot.conf:/etc/dovecot/dovecot.conf:ro
+      # Generated per run by test/helpers/mailEnv.mjs (random passwords, nothing committed)
+      - ${TEST_USERS_FILE:?set by test/helpers/mailEnv.mjs}:/etc/dovecot/users:ro
+      - ../fixtures/localhost-cert.pem:/etc/dovecot/tls/cert.pem:ro
+      - ../fixtures/localhost-key.pem:/etc/dovecot/tls/key.pem:ro
+    healthcheck:
+      test: ["CMD", "doveadm", "user", "alice@example.test"]
+      interval: 1s
+      timeout: 3s
+      retries: 30

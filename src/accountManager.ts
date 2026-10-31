@@ -61,7 +61,12 @@ function normalizeAccountConfig(accountName: string, cfg: any): EmailAccount {
     imap_port: parsePort(imap.port ?? cfg.imap_port ?? cfg.IMAP_PORT, 993, `Account "${accountName}" IMAP port`),
     imap_secure: toBoolean(imap.secure ?? cfg.imap_secure ?? cfg.IMAP_SECURE, parsePort(imap.port ?? cfg.imap_port ?? cfg.IMAP_PORT, 993, `Account "${accountName}" IMAP port`) === 993, `Account "${accountName}" IMAP secure`),
     default_from_name: cfg.default_from_name || cfg.DEFAULT_FROM_NAME,
-    sender_emails: parseSenderEmails(cfg.sender_emails ?? cfg.SENDER_EMAILS)
+    sender_emails: parseSenderEmails(cfg.sender_emails ?? cfg.SENDER_EMAILS),
+    save_to_sent: toBoolean(cfg.save_to_sent ?? cfg.SAVE_TO_SENT, false, `Account "${accountName}" save_to_sent`),
+    sent_folder: cfg.sent_folder || cfg.SENT_FOLDER || undefined,
+    read_only: toBoolean(cfg.read_only ?? cfg.READ_ONLY, false, `Account "${accountName}" read_only`),
+    allow_delete: toBoolean(cfg.allow_delete ?? cfg.ALLOW_DELETE, true, `Account "${accountName}" allow_delete`),
+    allow_permanent_delete: toBoolean(cfg.allow_permanent_delete ?? cfg.ALLOW_PERMANENT_DELETE, false, `Account "${accountName}" allow_permanent_delete`)
   };
 }
 
@@ -133,7 +138,12 @@ export function loadAccounts(): EmailAccounts {
     sender_emails: process.env.SENDER_EMAILS
       ?.split(',')
       .map((email) => email.trim())
-      .filter(Boolean)
+      .filter(Boolean),
+    save_to_sent: toBoolean(process.env.SAVE_TO_SENT, false, 'SAVE_TO_SENT'),
+    sent_folder: process.env.SENT_FOLDER || undefined,
+    read_only: toBoolean(process.env.READ_ONLY, false, 'READ_ONLY'),
+    allow_delete: toBoolean(process.env.ALLOW_DELETE, true, 'ALLOW_DELETE'),
+    allow_permanent_delete: toBoolean(process.env.ALLOW_PERMANENT_DELETE, false, 'ALLOW_PERMANENT_DELETE')
   };
 
   // Validate single account has required fields

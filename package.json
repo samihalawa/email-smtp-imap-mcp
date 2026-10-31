@@ -24,7 +24,8 @@
     "start": "node build/index.js",
     "watch": "tsc --watch",
     "prepare": "npm run build",
-    "dev": "npm run build && npm start"
+    "dev": "npm run build && npm start",
+    "test:live": "npm run build && node --test --test-concurrency=1 --test-timeout=600000 test/live/*.test.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.32.2",

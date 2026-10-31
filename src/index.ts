@@ -16,11 +16,22 @@ import {
   handleAccountsList,
   handleEmailsFind,
   handleEmailsModify,
+  handleEmailsWait,
   handleEmailSend,
   handleEmailRespond,
-  handleFoldersList
+  handleFoldersList,
+  handleAttachmentGet,
+  handleDraftCreate,
+  handleDraftUpdate,
+  handleDraftSend,
+  handleDraftDelete,
+  handleFolderCreate,
+  handleFolderRename,
+  handleFolderEmpty,
+  handleFolderDelete
 } from "./emailHandlers.js";
 import { loadEnvironment } from './environment.js';
+import { closeImapConnections } from './imapService.js';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
@@ -91,6 +102,10 @@ async function runServer() {
             result = await handleEmailsFind(args);
             break;
 
+          case "emails_wait":
+            result = await handleEmailsWait(args);
+            break;
+
           case "emails_modify":
             result = await handleEmailsModify(args);
             break;
@@ -105,6 +120,42 @@ async function runServer() {
 
           case "folders_list":
             result = await handleFoldersList(args);
+            break;
+
+          case "draft_create":
+            result = await handleDraftCreate(args);
+            break;
+
+          case "attachment_get":
+            result = await handleAttachmentGet(args);
+            break;
+
+          case "draft_update":
+            result = await handleDraftUpdate(args);
+            break;
+
+          case "draft_send":
+            result = await handleDraftSend(args);
+            break;
+
+          case "draft_delete":
+            result = await handleDraftDelete(args);
+            break;
+
+          case "folder_create":
+            result = await handleFolderCreate(args);
+            break;
+
+          case "folder_rename":
+            result = await handleFolderRename(args);
+            break;
+
+          case "folder_empty":
+            result = await handleFolderEmpty(args);
+            break;
+
+          case "folder_delete":
+            result = await handleFolderDelete(args);
             break;
 
           default:
@@ -146,6 +197,11 @@ async function runServer() {
     await server.connect(transport);
 
     logToFile("Email MCP Server started successfully");
+
+    // The client is gone: close parked IMAP connections instead of waiting for their idle timeout
+    process.stdin.on('close', () => {
+      closeImapConnections().finally(() => process.exit(0));
+    });
 
   } catch (error) {
     logToFile(`Server failed to start: ${error}`);
