@@ -15,6 +15,8 @@ export interface EmailAccount {
   imap_secure: boolean;
   default_from_name?: string;
   sender_emails?: string[];
+  save_to_sent?: boolean;
+  sent_folder?: string;
 }
 
 export interface EmailAccounts {

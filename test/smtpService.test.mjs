@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { buildReplyRecipients, resolveFromEmail } from '../build/smtpService.js';
+import { buildReplyRecipients, buildSentCopy, resolveFromEmail } from '../build/smtpService.js';
+import { resolveSentFolder } from '../build/imapService.js';
 
 const account = {
   smtp_host: 'smtp.example.test',
@@ -52,4 +53,27 @@ test('uses explicit reply recipients as the documented override', () => {
   }, true, ['override@example.test']);
 
   assert.deepEqual(recipients, ['override@example.test']);
+});
+
+test('builds a sent copy that keeps Bcc, Message-ID and Date', async () => {
+  const raw = (await buildSentCopy({
+    from: '"Sender" <sender@example.test>',
+    to: 'to@outside.test',
+    bcc: 'hidden@outside.test',
+    subject: 'Hello',
+    text: 'Body',
+    messageId: '<fixed-id@example.test>',
+    date: new Date('2026-01-02T03:04:05Z')
+  })).toString();
+
+  assert.match(raw, /^Bcc: hidden@outside\.test\r$/m);
+  assert.match(raw, /^Message-ID: <fixed-id@example\.test>\r$/m);
+  assert.match(raw, /^Date: Fri, 02 Jan 2026 03:04:05 \+0000\r$/m);
+});
+
+test('resolves the sent folder from config, special-use flag, or fallback', () => {
+  const folders = [{ path: 'INBOX' }, { path: 'Gesendete Objekte', specialUse: '\\Sent' }];
+  assert.equal(resolveSentFolder(folders, 'Custom/Sent'), 'Custom/Sent');
+  assert.equal(resolveSentFolder(folders), 'Gesendete Objekte');
+  assert.equal(resolveSentFolder([{ path: 'INBOX' }]), 'Sent');
 });

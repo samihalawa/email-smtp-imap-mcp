@@ -219,6 +219,7 @@ export async function handleEmailSend(args: any): Promise<string> {
       success: result.success,
       account: name,
       message_id: result.messageId,
+      ...(result.sent_copy ? { sent_copy: result.sent_copy } : {}),
       to,
       subject
     }, null, 2);
@@ -281,6 +282,7 @@ export async function handleEmailRespond(args: any): Promise<string> {
       success: result.success,
       account: name,
       message_id: result.messageId,
+      ...(result.sent_copy ? { sent_copy: result.sent_copy } : {}),
       response_type: responseType,
       original_email_id: emailId
     }, null, 2);

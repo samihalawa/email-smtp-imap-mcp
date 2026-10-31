@@ -61,7 +61,9 @@ function normalizeAccountConfig(accountName: string, cfg: any): EmailAccount {
     imap_port: parsePort(imap.port ?? cfg.imap_port ?? cfg.IMAP_PORT, 993, `Account "${accountName}" IMAP port`),
     imap_secure: toBoolean(imap.secure ?? cfg.imap_secure ?? cfg.IMAP_SECURE, parsePort(imap.port ?? cfg.imap_port ?? cfg.IMAP_PORT, 993, `Account "${accountName}" IMAP port`) === 993, `Account "${accountName}" IMAP secure`),
     default_from_name: cfg.default_from_name || cfg.DEFAULT_FROM_NAME,
-    sender_emails: parseSenderEmails(cfg.sender_emails ?? cfg.SENDER_EMAILS)
+    sender_emails: parseSenderEmails(cfg.sender_emails ?? cfg.SENDER_EMAILS),
+    save_to_sent: toBoolean(cfg.save_to_sent ?? cfg.SAVE_TO_SENT, false, `Account "${accountName}" save_to_sent`),
+    sent_folder: cfg.sent_folder || cfg.SENT_FOLDER || undefined
   };
 }
 
@@ -133,7 +135,9 @@ export function loadAccounts(): EmailAccounts {
     sender_emails: process.env.SENDER_EMAILS
       ?.split(',')
       .map((email) => email.trim())
-      .filter(Boolean)
+      .filter(Boolean),
+    save_to_sent: toBoolean(process.env.SAVE_TO_SENT, false, 'SAVE_TO_SENT'),
+    sent_folder: process.env.SENT_FOLDER || undefined
   };
 
   // Validate single account has required fields

@@ -20,7 +20,9 @@ const managedKeys = [
   'IMAP_USERNAME',
   'IMAP_PASS',
   'IMAP_PASSWORD',
-  'SENDER_EMAILS'
+  'SENDER_EMAILS',
+  'SAVE_TO_SENT',
+  'SENT_FOLDER'
 ];
 
 function withEnvironment(values, callback) {
@@ -73,6 +75,41 @@ test('supports flat environment aliases and comma-separated sender addresses', (
     assert.equal(account.imap_user, 'owner@test');
     assert.equal(account.imap_pass, 'smtp-pass');
     assert.deepEqual(account.sender_emails, ['owner@test', 'alias@test']);
+    assert.equal(account.save_to_sent, false);
+    assert.equal(account.sent_folder, undefined);
+  });
+});
+
+test('reads sent-copy settings from environment and JSON configuration', () => {
+  withEnvironment({
+    SMTP_HOST: 'smtp.example.test',
+    SMTP_USER: 'owner@test',
+    SMTP_PASS: 'smtp-pass',
+    IMAP_HOST: 'imap.example.test',
+    SAVE_TO_SENT: 'true',
+    SENT_FOLDER: 'Gesendete Objekte'
+  }, () => {
+    const account = loadAccounts().default;
+    assert.equal(account.save_to_sent, true);
+    assert.equal(account.sent_folder, 'Gesendete Objekte');
+  });
+
+  withEnvironment({
+    EMAIL_ACCOUNTS_JSON: JSON.stringify({
+      work: {
+        smtp: { host: 'smtp.example.test', user: 'work@test', password: 'pass' },
+        imap: { host: 'imap.example.test' },
+        save_to_sent: true
+      }
+    })
+  }, () => {
+    const account = loadAccounts().work;
+    assert.equal(account.save_to_sent, true);
+    assert.equal(account.sent_folder, undefined);
+  });
+
+  withEnvironment({ SMTP_HOST: 'smtp.example.test', SMTP_USER: 'a@test', SMTP_PASS: 'p', IMAP_HOST: 'imap.example.test', SAVE_TO_SENT: 'maybe' }, () => {
+    assert.throws(() => loadAccounts(), /SAVE_TO_SENT/);
   });
 });
 

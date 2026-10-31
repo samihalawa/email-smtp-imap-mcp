@@ -123,6 +123,12 @@ Use `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS`, `IMAP_HOS
 
 </details>
 
+### Saving sent mail
+
+SMTP only delivers a message; it does not put a copy in your Sent folder. Providers such as Gmail do that server-side, but many others (IONOS, Strato, most self-hosted servers) do not. Set `SAVE_TO_SENT=true` (or `"save_to_sent": true` per account in `EMAIL_ACCOUNTS_JSON`) to store every message sent by `email_send` and `email_respond` in the IMAP Sent folder, marked as read and including Bcc recipients.
+
+The folder is the one flagged `\Sent` by the server, falling back to `Sent`. Set `SENT_FOLDER` (or `"sent_folder"`) to use another one, e.g. `SENT_FOLDER="Gesendete Objekte"`. Send results then include `sent_copy` with `saved`, `folder` and, if storing failed, `error`; the mail itself is still delivered in that case. Leave it off for providers that already store sent mail, or you get duplicates.
+
 ## Tools
 
 | Tool | What it does |

@@ -282,6 +282,36 @@ export async function modifyEmails(
 }
 
 /**
+ * Pick the folder for sent copies: the configured one, else the folder
+ * flagged \\Sent (RFC 6154), else "Sent".
+ */
+export function resolveSentFolder(
+  folders: Array<{ path: string; specialUse?: string }>,
+  configured?: string
+): string {
+  if (configured) return configured;
+  return folders.find((folder) => folder.specialUse === '\\Sent')?.path || 'Sent';
+}
+
+/**
+ * Store a raw RFC 822 message in the account's sent folder, marked as read.
+ * Returns the folder path used.
+ */
+export async function appendToSentFolder(account: EmailAccount, raw: Buffer): Promise<string> {
+  const client = await createImapConnection(account);
+  try {
+    const folder = resolveSentFolder(
+      account.sent_folder ? [] : await client.list(),
+      account.sent_folder
+    );
+    await withTimeout(client.append(folder, raw, ['\\Seen']), 30000, 'Saving sent copy timed out');
+    return folder;
+  } finally {
+    await client.logout().catch(() => {});
+  }
+}
+
+/**
  * List folders with timeout protection
  */
 export async function listFolders(

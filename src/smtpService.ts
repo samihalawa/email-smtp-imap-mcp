@@ -3,8 +3,22 @@
  */
 
 import nodemailer from 'nodemailer';
+import MailComposer from 'nodemailer/lib/mail-composer/index.js';
+import { randomUUID } from 'node:crypto';
 import { EmailAccount, EmailAttachment, EmailMessage } from './types.js';
-import { getEmailById } from './imapService.js';
+import { appendToSentFolder, getEmailById } from './imapService.js';
+
+export interface SentCopyResult {
+  saved: boolean;
+  folder?: string;
+  error?: string;
+}
+
+export interface SendResult {
+  messageId: string;
+  success: boolean;
+  sent_copy?: SentCopyResult;
+}
 
 /**
  * Create SMTP transporter
@@ -99,7 +113,7 @@ export async function sendEmail(
     inReplyTo?: string;
     references?: string[];
   }
-): Promise<{ messageId: string; success: boolean }> {
+): Promise<SendResult> {
   const transporter = createTransporter(account);
 
   const fromEmail = resolveFromEmail(account, options.fromEmail);
@@ -138,12 +152,41 @@ export async function sendEmail(
     }));
   }
 
+  // Fix Message-ID and Date up front so the sent copy matches what was delivered
+  mailOptions.messageId = `<${randomUUID()}@${fromEmail.split('@')[1] || 'localhost'}>`;
+  mailOptions.date = new Date();
+
   const info = await transporter.sendMail(mailOptions);
 
-  return {
+  const result: SendResult = {
     messageId: info.messageId,
     success: !!info.messageId
   };
+  if (account.save_to_sent && result.success) {
+    result.sent_copy = await saveSentCopy(account, mailOptions);
+  }
+  return result;
+}
+
+/**
+ * Build the RFC 822 message as delivered, keeping the Bcc header like a mail client's sent copy
+ */
+export async function buildSentCopy(mailOptions: any): Promise<Buffer> {
+  const mail: any = new MailComposer(mailOptions).compile();
+  mail.keepBcc = true;
+  return mail.build();
+}
+
+/**
+ * Save a sent message to the IMAP sent folder. Never throws: the mail is already delivered.
+ */
+async function saveSentCopy(account: EmailAccount, mailOptions: any): Promise<SentCopyResult> {
+  try {
+    const folder = await appendToSentFolder(account, await buildSentCopy(mailOptions));
+    return { saved: true, folder };
+  } catch (error: any) {
+    return { saved: false, error: error.message || String(error) };
+  }
 }
 
 /**
@@ -161,7 +204,7 @@ export async function replyToEmail(
     includeAttachments?: boolean;
     additionalAttachments?: EmailAttachment[];
   }
-): Promise<{ messageId: string; success: boolean }> {
+): Promise<SendResult> {
   // Get the original email
   const originalEmail = await getEmailById(account, emailId, options.includeAttachments);
 
@@ -217,7 +260,7 @@ export async function forwardEmail(
     includeAttachments?: boolean;
     additionalAttachments?: EmailAttachment[];
   }
-): Promise<{ messageId: string; success: boolean }> {
+): Promise<SendResult> {
   // Get the original email
   const originalEmail = await getEmailById(account, emailId, options.includeAttachments);
 
