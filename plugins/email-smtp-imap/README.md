@@ -1,10 +1,10 @@
 # Email SMTP/IMAP
 
-Search and read messages, send email, reply or forward, update flags and folders, and switch between named accounts from Claude Code or a local Cowork session. The plugin starts Sami Halawa's open source **email-smtp-imap-mcp 2.2.2** server on your computer using the standard MCP stdio transport. It connects directly to the SMTP and IMAP providers you configure.
+Search and read messages, send email, reply or forward, update flags and folders, and switch between named accounts from Claude Code. The plugin starts Sami Halawa's open source **email-smtp-imap-mcp 2.2.2** server on your computer using the standard MCP stdio transport. It connects directly to the SMTP and IMAP providers you configure.
 
 ## Requirements and setup
 
-Use a current Claude Code or a local Cowork session that supports plugin configuration and local MCP servers. Local MCP tools run in Claude Code and Cowork sessions on your computer; they are not available in ordinary Claude chat. Node.js **20 or later**, npm and `npx` must be available. The first launch downloads the pinned package from npm when it is not already cached.
+Use a current Claude Code that supports plugin configuration and local MCP servers. This directory entry currently supports Claude Code. Other local MCP clients, including Cowork, can use the server only if their current host supports the required configuration and local MCP execution. These tools are not available in ordinary Claude chat. Node.js **20 or later**, npm and `npx` must be available. The first launch downloads the pinned package from npm when it is not already cached.
 
 For local use from this repository, load the folder with:
 
@@ -43,9 +43,15 @@ The server exposes six tools: `accounts_list`, `emails_find`, `emails_modify`, `
 
 ## Data and credentials
 
+This section is the privacy policy for the Email SMTP/IMAP plugin published by Sami Halawa.
+
 The account JSON is marked as a sensitive plugin configuration field and is passed to the local server process as `EMAIL_ACCOUNTS_JSON`. The optional default account name is ordinary configuration. Do not put real passwords in repository files, public issues or chat messages.
 
-The server uses your credentials to connect to the email providers you specify. Email content and metadata returned by tools are supplied to the Claude client and can be processed as part of your conversation. Sending, replying, moving messages and changing flags affect the selected mailbox. Attachments use base64 content in the server's tool inputs; your Claude client may need to read a local file before supplying that content. This plugin adds no separate hosted mail relay or analytics service.
+The local server uses your credentials to connect directly to the SMTP and IMAP providers you specify. It processes account settings, message content, metadata and attachments to carry out the email operations you request. The publisher does not receive or retain your credentials or mail data through the plugin and operates no separate hosted mail relay or analytics service for it.
+
+Your local Claude client handles plugin configuration and your conversation. Email content and metadata returned by tools are supplied to that client and can be processed as part of your conversation under the terms and settings of your Claude account. See [Anthropic's privacy policy](https://www.anthropic.com/legal/privacy) for its data handling and retention practices; business accounts may be governed by their customer agreements.
+
+Your selected SMTP and IMAP providers handle and store mail and normal mailbox changes under their own policies. Sending, replying, moving messages and changing flags affect the selected mailbox and can persist there after the plugin stops. Check the privacy and retention policies of each email provider you configure. Attachments use base64 content in the server's tool inputs; your Claude client may need to read a local file before supplying that content. To stop further access, disable the plugin and revoke its app passwords with your providers; this does not delete existing mail or conversation history.
 
 ## Project and support
 
