@@ -4,7 +4,7 @@ Search and read messages, send email, reply or forward, update flags and folders
 
 ## Requirements and setup
 
-Use a current Claude Code or Claude Desktop version that supports plugin configuration and local MCP servers. Local MCP tools run in Claude Code and Cowork sessions on your computer; they are not available in ordinary Claude chat. Node.js **20 or later**, npm and `npx` must be available. The first launch downloads the pinned package from npm when it is not already cached.
+Use a current Claude Code or a local Cowork session that supports plugin configuration and local MCP servers. Local MCP tools run in Claude Code and Cowork sessions on your computer; they are not available in ordinary Claude chat. Node.js **20 or later**, npm and `npx` must be available. The first launch downloads the pinned package from npm when it is not already cached.
 
 For local use from this repository, load the folder with:
 
@@ -43,9 +43,9 @@ The server exposes six tools: `accounts_list`, `emails_find`, `emails_modify`, `
 
 ## Data and credentials
 
-The account JSON is a sensitive plugin configuration field. Claude's supported configuration mechanism masks it and stores it in the platform's secure credential store; the host supplies it to the local server process as `EMAIL_ACCOUNTS_JSON`. The optional default account name is ordinary configuration. Do not put real passwords in repository files, public issues or chat messages.
+The account JSON is marked as a sensitive plugin configuration field and is passed to the local server process as `EMAIL_ACCOUNTS_JSON`. The optional default account name is ordinary configuration. Do not put real passwords in repository files, public issues or chat messages.
 
-The server uses your credentials to connect to the email providers you specify. Email content and metadata returned by tools are supplied to the Claude client and can be processed as part of your conversation. Sending, replying, moving messages and changing flags affect the selected mailbox. Attachments can be read from local paths you provide. This plugin adds no separate hosted mail relay or analytics service.
+The server uses your credentials to connect to the email providers you specify. Email content and metadata returned by tools are supplied to the Claude client and can be processed as part of your conversation. Sending, replying, moving messages and changing flags affect the selected mailbox. Attachments use base64 content in the server's tool inputs; your Claude client may need to read a local file before supplying that content. This plugin adds no separate hosted mail relay or analytics service.
 
 ## Project and support
 
