@@ -1,0 +1,29 @@
+{
+  "name": "email-smtp-imap",
+  "displayName": "Email SMTP/IMAP",
+  "version": "1.0.0",
+  "description": "Search, read, send, reply to and organise email across your own SMTP and IMAP accounts.",
+  "author": {
+    "name": "Sami Halawa",
+    "email": "sami@samihalawa.com",
+    "url": "https://samihalawa.com"
+  },
+  "license": "MIT",
+  "documentationUrl": "https://github.com/samihalawa/email-smtp-imap-mcp/blob/main/plugins/email-smtp-imap/README.md",
+  "supportUrl": "https://github.com/samihalawa/email-smtp-imap-mcp/issues",
+  "userConfig": {
+    "email_accounts_json": {
+      "type": "string",
+      "title": "Email accounts (JSON)",
+      "description": "A JSON object keyed by account name, containing SMTP and IMAP hosts, ports, TLS settings, usernames and app passwords. See the setup example in the plugin README.",
+      "required": true,
+      "sensitive": true
+    },
+    "default_email_account": {
+      "type": "string",
+      "title": "Default email account",
+      "description": "An account name from the JSON object. Leave blank to use its first account.",
+      "default": ""
+    }
+  }
+}

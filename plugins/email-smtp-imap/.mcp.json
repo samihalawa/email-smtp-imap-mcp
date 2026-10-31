@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "email-smtp-imap": {
+      "command": "npx",
+      "args": ["-y", "email-smtp-imap-mcp@2.2.2"],
+      "env": {
+        "EMAIL_ACCOUNTS_JSON": "${user_config.email_accounts_json}",
+        "DEFAULT_EMAIL_ACCOUNT": "${user_config.default_email_account}"
+      }
+    }
+  }
+}
