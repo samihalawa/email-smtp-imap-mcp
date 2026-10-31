@@ -25,5 +25,6 @@
       "description": "An account name from the JSON object. Leave blank to use its first account.",
       "default": ""
     }
-  }
+  },
+  "privacyPolicyUrl": "https://github.com/samihalawa/email-smtp-imap-mcp/blob/main/plugins/email-smtp-imap/README.md#data-and-credentials"
 }
