@@ -68,7 +68,7 @@ jobs:
             release-artifacts/sbom.spdx.json
             release-artifacts/checksums.json
       - name: Retain inspected release bundle before registry publication
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: release-assurance-${{ github.sha }}
           path: release-assurance.tgz

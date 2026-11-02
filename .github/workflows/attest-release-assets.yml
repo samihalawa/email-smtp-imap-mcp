@@ -81,7 +81,7 @@ jobs:
           predicate-type: https://github.com/samihalawa/email-smtp-imap-mcp/attestations/release-asset-verification/v1
           predicate-path: docs/evidence/release-v2.2.1-manifest.json
       - name: Retain the signature bundle
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: release-asset-signature-${{ github.sha }}
           path: ${{ steps.attest.outputs.bundle-path }}
