@@ -39,7 +39,7 @@ jobs:
           semgrep scan --config p/javascript --config p/nodejs --config p/security-audit
           --config .semgrep/transport-security.yml
           --metrics off --error --strict --no-git-ignore --json-output semgrep-results.json src scripts
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: static-analysis-${{ github.sha }}
